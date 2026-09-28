@@ -6,6 +6,7 @@ export interface AnnouncementParams {
   year?: string | number;
   sort?: string;
   page?: number;
+  limit?: number;
   status?: 'draft' | 'published';
 }
 

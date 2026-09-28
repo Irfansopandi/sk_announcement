@@ -3,9 +3,9 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { publicAnnouncementService } from '../../lib/api/announcements';
-import { Announcement } from '../../types';
-import { useDebounce } from '../../hooks/useDebounce';
+import { publicAnnouncementService } from '../../../lib/api/announcements';
+import { Announcement } from '../../../types';
+import { useDebounce } from '../../../hooks/useDebounce';
 
 function AnnouncementsContent() {
   const router = useRouter();
@@ -218,7 +218,7 @@ function AnnouncementsContent() {
               {announcements.map((announcement) => (
                 <Link
                   key={announcement.id}
-                  href={`/announcements/${announcement.id}`}
+                  href={`/${announcement.id}`}
                   className="block bg-white rounded-xl shadow-sm border border-[#E5E7E1] p-6 hover:shadow-md hover:border-[#266210] transition-all group"
                 >
                   <div className="flex flex-col sm:flex-row gap-4 justify-between items-start">

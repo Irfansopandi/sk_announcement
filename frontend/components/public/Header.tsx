@@ -1,121 +1,174 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { CalendarIcon, MenuIcon, XIcon, LayoutDashboardIcon, FileTextIcon, InfoIcon } from 'lucide-react';
 
 export default function PublicHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [currentDate, setCurrentDate] = useState<string>('');
+  const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
 
+  useEffect(() => {
+    const updateDate = () => {
+      const date = new Date();
+      const dateOptions: Intl.DateTimeFormatOptions = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      };
+      const timeOptions: Intl.DateTimeFormatOptions = {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      };
+      
+      const dateString = date.toLocaleDateString('id-ID', dateOptions);
+      // Ensure time uses colons instead of periods for id-ID locale
+      const timeString = date.toLocaleTimeString('id-ID', timeOptions).replace(/\./g, ':');
+      
+      setCurrentDate(`${dateString} - ${timeString}`);
+    };
+
+    updateDate();
+    const interval = setInterval(updateDate, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const navigation = [
-    { name: 'Pengumuman', href: '/announcements' },
+    { name: 'Dashboard', href: '/', icon: LayoutDashboardIcon },
+    { name: 'Pengumuman', href: '/pengumuman', icon: FileTextIcon },
+    { name: 'Notulensi Rapat', href: '/notulensi', icon: FileTextIcon },
+    { name: 'Tentang', href: '/tentang', icon: InfoIcon },
   ];
 
   return (
-    <header className="bg-[#FFFFFF] border-b border-[#E5E7E1] sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          {/* Left section: Logo & Desktop Menu */}
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <Link href="/announcements" className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#266210] to-[#3A9418] flex items-center justify-center shadow-sm">
-                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                  </svg>
-                </div>
-                <span className="text-xl font-bold text-[#1F2937] tracking-tight hidden sm:block">Portal SK</span>
-              </Link>
-            </div>
-            
-            <nav className="hidden sm:ml-8 sm:flex sm:space-x-8">
-              {navigation.map((item) => {
-                const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors ${
-                      isActive 
-                        ? 'border-[#266210] text-[#1F2937]' 
-                        : 'border-transparent text-[#4B5563] hover:text-[#1F2937] hover:border-[#E5E7E1]'
-                    }`}
-                  >
-                    {item.name}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
+    <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'shadow-2xl border-b border-[#ffffff20]' : 'border-b border-[#ffffff1a]'}`}>
+      
+      {/* Background Image & Blur Layer */}
+      <div className={`absolute inset-0 z-0 overflow-hidden transition-all duration-500 ${scrolled ? 'bg-[#0B1F2A]/60 backdrop-blur-3xl' : 'bg-[#0B1F2A]/85 backdrop-blur-md'}`}>
+        <div 
+          className={`absolute inset-0 bg-cover bg-center transition-opacity duration-500 ${scrolled ? 'opacity-0' : 'opacity-20'}`}
+          style={{ backgroundImage: "url('/hero-bg.jpg')" }} 
+        />
+        <div className={`absolute inset-0 bg-gradient-to-r from-[#0B1F2A] via-[#0B1F2A]/90 to-[#12333D]/80 transition-opacity duration-500 ${scrolled ? 'opacity-70' : 'opacity-100'}`} />
+      </div>
 
-          {/* Right section: Login Button */}
-          <div className="hidden sm:flex sm:items-center">
-            <Link 
-              href="/login"
-              className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-[#FFFFFF] bg-[#266210] hover:bg-[#3A9418] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#266210]"
-            >
-              Login Admin
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="flex justify-between items-center h-20">
+          
+          {/* Left section: Logo */}
+          <div className="flex items-center flex-shrink-0">
+            <Link href="/" className="flex items-center gap-2 sm:gap-3">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center relative ml-2 sm:ml-3">
+                <img 
+                  src="/logo1.png" 
+                  alt="ISKN Logo" 
+                  className="w-full h-full object-contain absolute inset-0 scale-[1.5] sm:scale-[1.8]"
+                  onError={(e) => {
+                    e.currentTarget.style.opacity = '0';
+                  }}
+                />
+              </div>
             </Link>
           </div>
 
-          {/* Mobile menu button */}
-          <div className="flex items-center sm:hidden">
-            <button
-              type="button"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-[#4B5563] hover:text-[#1F2937] hover:bg-[#F7F8F5] transition-colors focus:outline-none"
-              aria-controls="mobile-menu"
-              aria-expanded={isMobileMenuOpen}
-            >
-              <span className="sr-only">Buka menu utama</span>
-              {!isMobileMenuOpen ? (
-                <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              ) : (
-                <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              )}
-            </button>
+          {/* Center section: Navigation */}
+          <nav className="hidden md:flex items-center h-full space-x-2 lg:space-x-4">
+            {navigation.map((item) => {
+              const isActive = pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href));
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`relative flex items-center gap-2 px-3 h-full transition-all duration-200 group ${
+                    isActive ? 'text-white' : 'text-[#A6C0CF] hover:text-white'
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 transition-colors ${isActive ? 'text-[#D4AF37]' : 'text-[#A6C0CF] group-hover:text-white'}`} />
+                  <span className="text-sm font-medium tracking-wide">{item.name}</span>
+                  
+                  {/* Active Indicator Line */}
+                  <div className={`absolute bottom-0 left-0 w-full h-[3px] rounded-t-sm transition-all duration-300 ${
+                    isActive ? 'bg-[#D4AF37] opacity-100 scale-x-100' : 'bg-[#D4AF37] opacity-0 scale-x-0 group-hover:opacity-50 group-hover:scale-x-100'
+                  }`} />
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Right section: Date & Mobile toggle */}
+          <div className="flex items-center gap-4">
+            <div className="hidden lg:flex items-center gap-2 text-[#CFDFE8] px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
+              <CalendarIcon className="w-4 h-4" />
+              <span className="text-sm font-medium">{currentDate || 'Memuat tanggal...'}</span>
+            </div>
+
+            {/* Mobile menu button */}
+            <div className="flex items-center md:hidden">
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="inline-flex items-center justify-center p-2 rounded-lg text-[#A6C0CF] hover:text-white hover:bg-white/10 transition-colors focus:outline-none"
+                aria-controls="mobile-menu"
+                aria-expanded={isMobileMenuOpen}
+              >
+                <span className="sr-only">Buka menu utama</span>
+                {!isMobileMenuOpen ? (
+                  <MenuIcon className="block h-6 w-6" aria-hidden="true" />
+                ) : (
+                  <XIcon className="block h-6 w-6" aria-hidden="true" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Mobile menu panel */}
       {isMobileMenuOpen && (
-        <div className="sm:hidden border-t border-[#E5E7E1] bg-[#FFFFFF]" id="mobile-menu">
-          <div className="pt-2 pb-3 space-y-1">
+        <div className="md:hidden bg-[#0B1F2A]/95 backdrop-blur-xl border-t border-[#ffffff1a] shadow-xl absolute w-full left-0 z-50" id="mobile-menu">
+          <div className="px-4 pt-4 pb-2 border-b border-[#ffffff1a] flex items-center gap-2 text-[#CFDFE8]">
+             <CalendarIcon className="w-4 h-4" />
+             <span className="text-sm font-medium">{currentDate || 'Memuat tanggal...'}</span>
+          </div>
+          <div className="px-2 pt-2 pb-4 space-y-1 mt-2">
             {navigation.map((item) => {
-              const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+              const isActive = pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href));
+              const Icon = item.icon;
               return (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                  className={`flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium transition-colors ${
                     isActive 
-                      ? 'border-[#266210] text-[#266210] bg-[#EEF5EA]' 
-                      : 'border-transparent text-[#4B5563] hover:bg-[#F7F8F5] hover:border-[#E5E7E1] hover:text-[#1F2937]'
+                      ? 'bg-white/10 text-white border-l-4 border-[#D4AF37]' 
+                      : 'text-[#A6C0CF] hover:bg-white/5 hover:text-white border-l-4 border-transparent'
                   }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-[#D4AF37]' : 'text-[#A6C0CF]'}`} />
                   {item.name}
                 </Link>
               );
             })}
-          </div>
-          <div className="pt-4 pb-4 border-t border-[#E5E7E1] px-4">
-            <Link 
-              href="/login"
-              className="block w-full text-center px-4 py-2 border border-transparent text-base font-medium rounded-lg text-[#FFFFFF] bg-[#266210] hover:bg-[#3A9418] transition-colors"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Login Admin
-            </Link>
           </div>
         </div>
       )}
     </header>
   );
 }
+
