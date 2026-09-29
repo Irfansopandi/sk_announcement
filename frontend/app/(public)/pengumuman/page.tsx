@@ -1,11 +1,73 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { publicAnnouncementService } from '../../../lib/api/announcements';
 import { Announcement } from '../../../types';
 import { useDebounce } from '../../../hooks/useDebounce';
+
+// Custom Dropdown Component
+function CustomDropdown({
+  value,
+  options,
+  onChange,
+}: {
+  value: string;
+  options: { label: string; value: string }[];
+  onChange: (value: string) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find((opt) => opt.value === String(value)) || options[0];
+
+  return (
+    <div className="relative w-full" ref={dropdownRef}>
+      <button
+        type="button"
+        className="flex w-full items-center justify-between py-2.5 px-3 border border-slate-300 rounded-lg text-sm text-slate-900 bg-white hover:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span>{selectedOption?.label}</span>
+        <svg className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      
+      {isOpen && (
+        <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+          <ul className="py-1">
+            {options.map((option) => (
+              <li
+                key={option.value}
+                className={`px-3 py-2 text-sm cursor-pointer hover:bg-emerald-50 hover:text-emerald-700 transition-colors ${
+                  String(value) === String(option.value) ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-slate-700'
+                }`}
+                onClick={() => {
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
+              >
+                {option.label}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function AnnouncementsContent() {
   const router = useRouter();
@@ -86,14 +148,14 @@ function AnnouncementsContent() {
   };
 
   const currentYear = new Date().getFullYear();
-  const yearOptions = Array.from({ length: 5 }, (_, i) => currentYear - i);
+  const yearOptions = Array.from({ length: 10 }, (_, i) => currentYear - i);
 
   return (
     <div className="space-y-8">
       {/* Header Section */}
       <div className="border-b border-[#E5E7E1] pb-6">
-        <h1 className="text-3xl font-bold text-[#1F2937]">Pengumuman Surat Keputusan</h1>
-        <p className="mt-2 text-lg text-[#4B5563]">
+        <h1 className="text-3xl font-bold text-[#14232E]">Surat Keputusan</h1>
+        <p className="mt-2 text-lg text-[#6B7C87]">
           Portal informasi daftar Surat Keputusan yang telah dipublikasikan secara resmi.
         </p>
       </div>
@@ -101,12 +163,12 @@ function AnnouncementsContent() {
       {/* Filter Section */}
       <div className="bg-[#FFFFFF] p-4 sm:p-6 rounded-xl shadow-sm border border-[#E5E7E1] flex flex-col md:flex-row gap-4 items-end">
         <div className="w-full md:w-1/2">
-          <label htmlFor="search" className="block text-sm font-medium text-[#1F2937] mb-1">
+          <label htmlFor="search" className="block text-sm font-semibold text-[#14232E] mb-2">
             Pencarian
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
@@ -117,43 +179,37 @@ function AnnouncementsContent() {
               placeholder="Cari No. SK atau Keterangan..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-[#266210] focus:border-[#266210] text-sm"
+              className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 text-sm text-slate-900 placeholder-slate-400 bg-white transition-colors"
             />
           </div>
         </div>
 
         <div className="w-full md:w-1/4">
-          <label htmlFor="year" className="block text-sm font-medium text-[#1F2937] mb-1">
+          <label htmlFor="year" className="block text-sm font-semibold text-[#14232E] mb-2">
             Tahun
           </label>
-          <select
-            id="year"
-            aria-label="Filter Tahun"
+          <CustomDropdown 
             value={year}
-            onChange={(e) => setYear(e.target.value)}
-            className="block w-full py-2 px-3 border border-gray-300 rounded-lg focus:ring-[#266210] focus:border-[#266210] text-sm"
-          >
-            <option value="">Semua Tahun</option>
-            {yearOptions.map((y) => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
+            options={[
+              { label: 'Semua Tahun', value: '' },
+              ...yearOptions.map(y => ({ label: String(y), value: String(y) }))
+            ]}
+            onChange={(val) => setYear(val)}
+          />
         </div>
 
         <div className="w-full md:w-1/4">
-          <label htmlFor="sort" className="block text-sm font-medium text-[#1F2937] mb-1">
+          <label htmlFor="sort" className="block text-sm font-semibold text-[#14232E] mb-2">
             Urutkan
           </label>
-          <select
-            id="sort"
-            aria-label="Pengurutan"
+          <CustomDropdown 
             value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className="block w-full py-2 px-3 border border-gray-300 rounded-lg focus:ring-[#266210] focus:border-[#266210] text-sm"
-          >
-            <option value="terbaru">Terbaru</option>
-            <option value="terlama">Terlama</option>
-          </select>
+            options={[
+              { label: 'Terbaru', value: 'terbaru' },
+              { label: 'Terlama', value: 'terlama' },
+            ]}
+            onChange={(val) => setSort(val)}
+          />
         </div>
       </div>
 
@@ -215,37 +271,72 @@ function AnnouncementsContent() {
           <div className="space-y-4">
             <p className="text-sm text-[#4B5563]">Menampilkan {totalItems} Surat Keputusan</p>
             <div className="grid gap-4">
+              {/* Table Header (visible on lg screens) */}
+              <div className="hidden lg:grid grid-cols-12 gap-4 px-6 py-3 bg-emerald-50 rounded-lg border border-emerald-100 text-sm font-semibold text-emerald-800">
+                <div className="col-span-2">Tanggal SK</div>
+                <div className="col-span-3">Nomor SK</div>
+                <div className="col-span-4">Tentang</div>
+                <div className="col-span-3 text-right">Aksi</div>
+              </div>
+
               {announcements.map((announcement) => (
-                <Link
+                <div
                   key={announcement.id}
-                  href={`/${announcement.id}`}
-                  className="block bg-white rounded-xl shadow-sm border border-[#E5E7E1] p-6 hover:shadow-md hover:border-[#266210] transition-all group"
+                  className="bg-white rounded-xl shadow-sm border border-[#E5E7E1] p-5 lg:p-0 hover:shadow-md hover:border-emerald-300 transition-all group"
                 >
-                  <div className="flex flex-col sm:flex-row gap-4 justify-between items-start">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-[#4B5563]">
-                          {new Date(announcement.sk_date).toLocaleDateString('id-ID', {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric'
-                          })}
-                        </span>
-                      </div>
-                      <h3 className="text-lg font-bold text-[#1F2937] group-hover:text-[#266210] transition-colors">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:items-center lg:px-6 lg:py-5">
+                    {/* Date */}
+                    <div className="lg:col-span-2 flex flex-col justify-center">
+                      <span className="lg:hidden text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Tanggal SK</span>
+                      <span className="text-sm font-medium text-slate-600">
+                        {new Date(announcement.sk_date).toLocaleDateString('id-ID', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
+                        })}
+                      </span>
+                    </div>
+
+                    {/* Nomor SK */}
+                    <div className="lg:col-span-3 flex flex-col justify-center">
+                      <span className="lg:hidden text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Nomor SK</span>
+                      <h3 className="text-base font-bold text-[#14232E] group-hover:text-emerald-600 transition-colors">
                         {announcement.sk_number}
                       </h3>
-                      <p className="text-[#4B5563] text-sm line-clamp-2">
-                        {announcement.description}
-                      </p>
-                    </div>
-                    <div className="shrink-0 mt-2 sm:mt-0">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[#EEF5EA] text-[#266210] border border-[#E0EED9]">
+                      <span className="inline-flex mt-1 lg:hidden w-fit items-center px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-100 text-emerald-700">
                         Published
                       </span>
                     </div>
+
+                    {/* Deskripsi */}
+                    <div className="lg:col-span-4 flex flex-col justify-center">
+                      <span className="lg:hidden text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Tentang</span>
+                      <p className="text-slate-500 text-sm leading-relaxed whitespace-pre-wrap break-words">
+                        {announcement.description}
+                      </p>
+                    </div>
+
+                    {/* Aksi */}
+                    <div className="lg:col-span-3 flex items-center justify-start lg:justify-end gap-2 mt-4 lg:mt-0 pt-4 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+
+                      <button
+                        onClick={() => {
+                          if (announcement.documents && announcement.documents.length > 0) {
+                            const baseUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api').replace(/\/api$/, '');
+                            window.open(`${baseUrl}/api/documents/${announcement.documents[0].id}/download`, '_blank');
+                          }
+                        }}
+                        disabled={!announcement.documents || announcement.documents.length === 0}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download
+                      </button>
+                    </div>
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
 
@@ -303,7 +394,7 @@ function AnnouncementsContent() {
                               aria-current={page === pageNum ? 'page' : undefined}
                               className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
                                 page === pageNum
-                                  ? 'z-10 bg-[#266210] text-white focus-visible:outline-[#266210]'
+                                  ? 'z-10 bg-emerald-600 text-white focus-visible:outline-emerald-600'
                                   : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50'
                               }`}
                             >
@@ -350,7 +441,7 @@ export default function PublicAnnouncementsPage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#266210]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
       </div>
     }>
       <AnnouncementsContent />

@@ -54,8 +54,16 @@ export default function DocumentManager({ announcementId }: DocumentManagerProps
   }, [fetchDocuments]);
 
   const validateFile = (file: File): string | null => {
-    if (file.type !== 'application/pdf') {
-      return "Format file tidak didukung. Harap unggah file PDF.";
+    const allowedTypes = [
+      'application/pdf', 
+      'application/vnd.ms-excel', 
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/csv',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+    if (!allowedTypes.includes(file.type) && !file.name.match(/\.(pdf|xls|xlsx|csv|doc|docx)$/i)) {
+      return "Format file tidak didukung. Harap unggah file PDF, Excel, atau Word.";
     }
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
@@ -243,7 +251,7 @@ export default function DocumentManager({ announcementId }: DocumentManagerProps
             type="file" 
             ref={fileInputRef} 
             onChange={handleFileChange} 
-            accept="application/pdf"
+            accept=".pdf,.xls,.xlsx,.csv,.doc,.docx"
             className="hidden" 
             disabled={isUploading}
           />
@@ -265,7 +273,7 @@ export default function DocumentManager({ announcementId }: DocumentManagerProps
               <p className="text-sm font-medium text-[#1F2937]">
                 {isUploading ? 'Mengunggah...' : 'Klik untuk unggah atau seret dan lepas'}
               </p>
-              <p className="text-xs text-[#4B5563] mt-1">PDF hingga 10MB</p>
+              <p className="text-xs text-[#4B5563] mt-1">PDF, Excel, atau Word hingga 10MB</p>
             </div>
             
             {isUploading && uploadProgress > 0 && (
@@ -309,17 +317,19 @@ export default function DocumentManager({ announcementId }: DocumentManagerProps
                   <div className="truncate">
                     <p className="text-sm font-medium text-[#1F2937] truncate">{doc.file_name}</p>
                     <p className="text-xs text-[#4B5563] mt-0.5">
-                      PDF • {formatFileSize(doc.file_size)} • {new Date(doc.created_at).toLocaleDateString('id-ID')}
+                      {doc.file_type.includes('pdf') ? 'PDF' : 'Excel/Dokumen'} • {formatFileSize(doc.file_size)} • {new Date(doc.created_at).toLocaleDateString('id-ID')}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={() => handlePreview(doc)}
-                    className="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium text-[#266210] bg-[#EEF5EA] hover:bg-[#E0EED9] rounded-lg transition-colors"
-                  >
-                    Lihat
-                  </button>
+                  {doc.file_type.includes('pdf') && (
+                    <button
+                      onClick={() => handlePreview(doc)}
+                      className="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium text-[#266210] bg-[#EEF5EA] hover:bg-[#E0EED9] rounded-lg transition-colors"
+                    >
+                      Lihat
+                    </button>
+                  )}
                   <button
                     onClick={() => handleDownload(doc)}
                     className="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium text-[#1F2937] bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"

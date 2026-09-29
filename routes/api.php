@@ -11,6 +11,7 @@ Route::post('/login', [AuthController::class, 'login']);
 // Public routes for announcements
 Route::get('/announcements', [PublicAnnouncementController::class, 'index']);
 Route::get('/announcements/{id}', [PublicAnnouncementController::class, 'show']);
+Route::get('/documents/{id}/download', [PublicAnnouncementController::class, 'downloadDocument']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);

@@ -15,12 +15,56 @@ import { Announcement } from '../../types';
 
 export default function DashboardPage() {
   const [allSKsForYear, setAllSKsForYear] = useState<Announcement[]>([]);
+  const [allNotulensiForYear, setAllNotulensiForYear] = useState<any[]>([]);
   const [selectedFilterDate, setSelectedFilterDate] = useState<string | null>(null);
   const [yearSK, setYearSK] = useState<number>(0);
   
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [greeting, setGreeting] = useState('Selamat Datang');
+  const [heroSlide, setHeroSlide] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(true);
+
+  const heroSlidesData = [
+    {
+      image: "/hero-1.webp",
+      title: <>Informasi Surat Keputusan<br />dan Rapat</>,
+      description: "Akses informasi terbaru mengenai Surat Keputusan (SK) dan hasil rapat secara transparan dan mudah."
+    },
+    {
+      image: "/hero-2.webp",
+      title: <>Tingkatkan Efisiensi<br />dan Kolaborasi Tim</>,
+      description: "Pantau keputusan penting dan pastikan semua anggota tim selalu terhubung dengan informasi terkini."
+    },
+    {
+      image: "/hero-3.webp",
+      title: <>Transparansi Data<br />Untuk Kemajuan Bersama</>,
+      description: "Sistem yang dirancang untuk memberikan kemudahan akses data korporat secara real-time dan akurat."
+    }
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIsTransitioning(true);
+      setHeroSlide((prev) => prev + 1);
+    }, 8000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (heroSlide === heroSlidesData.length) {
+      const timer = setTimeout(() => {
+        setIsTransitioning(false);
+        setHeroSlide(0);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [heroSlide]);
+
+  const handleDotClick = (idx: number) => {
+    setIsTransitioning(true);
+    setHeroSlide(idx);
+  };
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -49,6 +93,26 @@ export default function DashboardPage() {
           setYearSK(yearRes.data.total);
         }
 
+        // Mock Notulensi data fetch based on calendar year
+        if (currentDate.getFullYear() === new Date().getFullYear()) {
+          setAllNotulensiForYear([
+            {
+              id: 1,
+              title: "Rapat Koordinasi Bulanan",
+              sk_date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-15`,
+              description: "Pembahasan evaluasi kinerja dan target bulan depan."
+            },
+            {
+              id: 2,
+              title: "Rapat Paripurna",
+              sk_date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-20`,
+              description: "Pengesahan draft keputusan tahunan."
+            }
+          ]);
+        } else {
+          setAllNotulensiForYear([]);
+        }
+
       } catch (error) {
         console.error("Failed to fetch dashboard data", error);
       } finally {
@@ -59,23 +123,6 @@ export default function DashboardPage() {
     fetchData();
   }, [currentDate.getFullYear()]); // Refetch if calendar year changes
 
-  // Mock Notulensi data (since API might not be ready)
-  // We'll create some mock data in the current month to show the functionality
-  const [allNotulensiForYear] = useState<any[]>([
-    {
-      id: 1,
-      title: "Rapat Koordinasi Bulanan",
-      sk_date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-15`,
-      description: "Pembahasan evaluasi kinerja dan target bulan depan."
-    },
-    {
-      id: 2,
-      title: "Rapat Paripurna",
-      sk_date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-20`,
-      description: "Pengesahan draft keputusan tahunan."
-    }
-  ]);
-
   // Filter logic based on calendar selection
   const getFilteredSKs = () => {
     if (selectedFilterDate) {
@@ -85,23 +132,22 @@ export default function DashboardPage() {
         return skDateOnly === selectedFilterDate;
       }).sort((a,b) => new Date(b.sk_date).getTime() - new Date(a.sk_date).getTime());
     } else {
-      // Show ALL SKs for the currently viewed calendar month
-      const monthSKs = allSKsForYear.filter(sk => {
-        const d = new Date(sk.sk_date);
-        return d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
-      });
-      return monthSKs.sort((a,b) => new Date(b.sk_date).getTime() - new Date(a.sk_date).getTime());
+      // Default: Show 10 absolute latest SKs
+      return [...allSKsForYear]
+        .sort((a,b) => new Date(b.sk_date).getTime() - new Date(a.sk_date).getTime())
+        .slice(0, 10);
     }
   };
 
   const getFilteredNotulensi = () => {
     if (selectedFilterDate) {
-      return allNotulensiForYear.filter(n => n.sk_date === selectedFilterDate);
+      return allNotulensiForYear.filter(n => n.sk_date === selectedFilterDate)
+        .sort((a,b) => new Date(b.sk_date).getTime() - new Date(a.sk_date).getTime());
     } else {
-      return allNotulensiForYear.filter(n => {
-        const d = new Date(n.sk_date);
-        return d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
-      });
+      // Default: Show 10 absolute latest Rapat
+      return [...allNotulensiForYear]
+        .sort((a,b) => new Date(b.sk_date).getTime() - new Date(a.sk_date).getTime())
+        .slice(0, 10);
     }
   };
 
@@ -149,14 +195,14 @@ export default function DashboardPage() {
       type: 'SK',
       title: sk.description,
       date: sk.sk_date,
-      link: `/pengumuman/${sk.id}`
+      link: `/pengumuman?search=${encodeURIComponent(sk.sk_number)}`
     })),
     ...latestNotulensi.map(n => ({
       id: `notulensi-${n.id}`,
-      type: 'Notulensi',
+      type: 'Rapat',
       title: n.title,
       date: n.sk_date,
-      link: `/notulensi` // Placeholder
+      link: `/notulensi?search=${encodeURIComponent(n.title)}`
     }))
   ];
 
@@ -166,63 +212,84 @@ export default function DashboardPage() {
     <div className="space-y-8 animate-in fade-in duration-500">
       
       {/* Hero Section */}
-      <div className="relative rounded-2xl overflow-hidden bg-black text-white shadow-lg">
-        <div className="absolute inset-0 z-0">
-          {/* User should place their background image as hero-bg.jpg in public folder */}
-          <img 
-            src="/hero-bg.jpg" 
-            alt="Hero Background" 
-            className="w-full h-full object-cover opacity-60"
-            onError={(e) => {
-              // Fallback to unsplash if local image not found
-              e.currentTarget.src = "https://images.unsplash.com/photo-1541888040713-33e3d29831e7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80";
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0B1F2A]/90 via-[#0B1F2A]/70 to-transparent" />
-        </div>
-        <div className="relative z-10 p-8 md:p-12 lg:w-2/3">
-          <p className="text-sm md:text-base font-bold text-[#D4AF37] tracking-wider uppercase mb-2">{greeting}</p>
-          <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-4 text-white">
-            Informasi Surat Keputusan<br />dan Notulensi Rapat
-          </h1>
-          <p className="text-[#CFDFE8] text-base md:text-lg max-w-xl leading-relaxed">
-            Akses informasi terbaru mengenai Surat Keputusan (SK) dan hasil rapat secara transparan dan mudah.
-          </p>
+      <div className="relative rounded-2xl overflow-hidden bg-black text-white shadow-lg h-64 md:h-80 lg:h-96">
+        
+        {/* Slides */}
+        {[...heroSlidesData, heroSlidesData[0]].map((slide, idx) => (
+          <div 
+            key={idx}
+            className={`absolute inset-0 w-full h-full flex items-center ${isTransitioning ? 'transition-transform duration-1000 ease-in-out' : ''}`}
+            style={{ transform: `translateX(${(idx - heroSlide) * -100}%)` }}
+          >
+            {/* Image */}
+            <img 
+              src={slide.image} 
+              alt={`Hero Background ${idx + 1}`} 
+              className="absolute inset-0 w-full h-full object-cover opacity-60"
+            />
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0B1F2A]/90 via-[#0B1F2A]/70 to-transparent pointer-events-none" />
+            
+            {/* Text Content */}
+            <div className="relative z-10 p-8 md:p-12 lg:w-2/3 h-full flex flex-col justify-center">
+              <div className="mb-2">
+                <p className="text-sm md:text-base font-bold text-[#D4AF37] tracking-wider uppercase drop-shadow-md">{greeting}</p>
+              </div>
+              <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-4 text-white drop-shadow-md">
+                {slide.title}
+              </h1>
+              <p className="text-[#CFDFE8] text-base md:text-lg max-w-xl leading-relaxed drop-shadow-md">
+                {slide.description}
+              </p>
+            </div>
+          </div>
+        ))}
+
+        {/* Indicators */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+           {heroSlidesData.map((_, idx) => (
+              <button 
+                key={idx} 
+                onClick={() => handleDotClick(idx)}
+                className={`h-2 rounded-full transition-all duration-300 ${(heroSlide % heroSlidesData.length) === idx ? 'bg-white w-8' : 'bg-white/50 w-2 hover:bg-white/80'}`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+           ))}
         </div>
       </div>
 
       {/* Stats Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* SK Card */}
-        <div className="group rounded-2xl p-6 shadow-sm flex items-start gap-4 transition-all duration-300 bg-blue-50/60 border border-blue-200 hover:border-blue-500 hover:shadow-md hover:bg-blue-50">
-          <div className="p-3 bg-blue-100 text-blue-600 rounded-xl shrink-0 group-hover:scale-110 transition-transform duration-300">
-            <FileTextIcon className="w-6 h-6" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-slate-500 mb-1">Total SK Per Tahun</p>
-            {loading ? (
-              <div className="h-8 w-16 bg-blue-200/50 rounded animate-pulse" />
-            ) : (
-              <h3 className="text-3xl font-bold text-slate-800">{yearSK}</h3>
-            )}
-            <p className="text-xs text-slate-500 mt-1">Total SK tahun {new Date().getFullYear()}</p>
-          </div>
-          <Link href="/pengumuman" className="text-blue-300 group-hover:text-blue-600 transition-colors self-center p-2">
-            <ChevronRightIcon className="w-5 h-5" />
-          </Link>
-        </div>
-
-        {/* Notulensi Card */}
         <div className="group rounded-2xl p-6 shadow-sm flex items-start gap-4 transition-all duration-300 bg-emerald-50/60 border border-emerald-200 hover:border-emerald-500 hover:shadow-md hover:bg-emerald-50">
           <div className="p-3 bg-emerald-100 text-emerald-600 rounded-xl shrink-0 group-hover:scale-110 transition-transform duration-300">
             <FileTextIcon className="w-6 h-6" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-medium text-slate-500 mb-1">Total Notulensi Per Tahun</p>
-            <h3 className="text-3xl font-bold text-slate-800">{allNotulensiForYear.length}</h3>
-            <p className="text-xs text-slate-500 mt-1">Total notulensi tahun {new Date().getFullYear()}</p>
+            <p className="text-sm font-medium text-slate-500 mb-1">Total SK Per Tahun</p>
+            {loading ? (
+              <div className="h-8 w-16 bg-emerald-200/50 rounded animate-pulse" />
+            ) : (
+              <h3 className="text-3xl font-bold text-slate-800">{yearSK}</h3>
+            )}
+            <p className="text-xs text-slate-500 mt-1">Total SK tahun {currentDate.getFullYear()}</p>
           </div>
-          <Link href="/notulensi" className="text-emerald-300 group-hover:text-emerald-600 transition-colors self-center p-2">
+          <Link href="/pengumuman" className="text-emerald-300 group-hover:text-emerald-600 transition-colors self-center p-2">
+            <ChevronRightIcon className="w-5 h-5" />
+          </Link>
+        </div>
+
+        {/* Notulensi Card */}
+        <div className="group rounded-2xl p-6 shadow-sm flex items-start gap-4 transition-all duration-300 bg-amber-50/60 border border-amber-200 hover:border-amber-500 hover:shadow-md hover:bg-amber-50">
+          <div className="p-3 bg-amber-100 text-amber-600 rounded-xl shrink-0 group-hover:scale-110 transition-transform duration-300">
+            <FileTextIcon className="w-6 h-6" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-slate-500 mb-1">Total Rapat Per Tahun</p>
+            <h3 className="text-3xl font-bold text-slate-800">{allNotulensiForYear.length}</h3>
+            <p className="text-xs text-slate-500 mt-1">Total rapat tahun {currentDate.getFullYear()}</p>
+          </div>
+          <Link href="/notulensi" className="text-amber-300 group-hover:text-amber-600 transition-colors self-center p-2">
             <ChevronRightIcon className="w-5 h-5" />
           </Link>
         </div>
@@ -238,7 +305,7 @@ export default function DashboardPage() {
               <FileTextIcon className="w-5 h-5 text-[#12333D]" />
               <h2 className="text-lg font-bold text-[#14232E]">SK Terbaru</h2>
             </div>
-            <Link href="/pengumuman" className="text-sm font-medium text-[#2A75B3] hover:text-[#12333D] transition-colors flex items-center gap-1">
+            <Link href="/pengumuman" className="text-sm font-medium text-emerald-600 hover:text-emerald-800 transition-colors flex items-center gap-1">
               Lihat Semua <ChevronRightIcon className="w-4 h-4" />
             </Link>
           </div>
@@ -256,8 +323,8 @@ export default function DashboardPage() {
               ))
             ) : latestSK.length > 0 ? (
               latestSK.map((sk) => (
-                <Link key={sk.id} href={`/pengumuman/${sk.id}`} className="group flex items-start gap-4 p-3 rounded-xl hover:bg-[#F5F7F8] transition-colors border border-transparent hover:border-[#E5E7E1]">
-                  <div className="w-10 h-10 rounded-lg bg-[#EEF5FA] text-[#2A75B3] flex items-center justify-center shrink-0 group-hover:bg-[#2A75B3] group-hover:text-white transition-colors">
+                <Link key={sk.id} href={`/pengumuman?search=${encodeURIComponent(sk.sk_number)}`} className="group flex items-start gap-4 p-3 rounded-xl hover:bg-[#F5F7F8] transition-colors border border-transparent hover:border-[#E5E7E1]">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                     <FileTextIcon className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -267,11 +334,11 @@ export default function DashboardPage() {
                       </span>
                       <span className="text-xs font-semibold text-[#14232E] truncate">{sk.sk_number}</span>
                     </div>
-                    <p className="text-sm text-[#14232E] font-medium line-clamp-2 leading-snug group-hover:text-[#2A75B3] transition-colors">
+                    <p className="text-sm text-[#14232E] font-medium line-clamp-2 leading-snug group-hover:text-emerald-600 transition-colors">
                       {sk.description}
                     </p>
                   </div>
-                  <ChevronRightIcon className="w-5 h-5 text-[#A6C0CF] group-hover:text-[#2A75B3] shrink-0 self-center transition-colors" />
+                  <ChevronRightIcon className="w-5 h-5 text-[#A6C0CF] group-hover:text-emerald-600 shrink-0 self-center transition-colors" />
                 </Link>
               ))
             ) : (
@@ -283,14 +350,14 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Middle Col: Notulensi Rapat */}
+        {/* Middle Col: Rapat */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5E7E1] flex flex-col h-full">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <CalendarIcon className="w-5 h-5 text-[#12333D]" />
-              <h2 className="text-lg font-bold text-[#14232E]">Notulensi Rapat</h2>
+              <h2 className="text-lg font-bold text-[#14232E]">Rapat</h2>
             </div>
-            <Link href="/notulensi" className="text-sm font-medium text-[#2A75B3] hover:text-[#12333D] transition-colors flex items-center gap-1">
+            <Link href="/notulensi" className="text-sm font-medium text-amber-600 hover:text-amber-800 transition-colors flex items-center gap-1">
               Lihat Semua <ChevronRightIcon className="w-4 h-4" />
             </Link>
           </div>
@@ -308,26 +375,26 @@ export default function DashboardPage() {
               ))
             ) : latestNotulensi.length > 0 ? (
               latestNotulensi.map((item) => (
-                <Link key={item.id} href={`/notulensi`} className="group flex items-start gap-4 p-3 rounded-xl hover:bg-[#F5F7F8] transition-colors border border-transparent hover:border-[#E5E7E1]">
-                  <div className="w-10 h-10 rounded-lg bg-[#F3E8FF] text-[#7E22CE] flex items-center justify-center shrink-0 group-hover:bg-[#7E22CE] group-hover:text-white transition-colors">
+                <Link key={item.id} href={`/notulensi?search=${encodeURIComponent(item.title)}`} className="group flex items-start gap-4 p-3 rounded-xl hover:bg-[#F5F7F8] transition-colors border border-transparent hover:border-[#E5E7E1]">
+                  <div className="w-10 h-10 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 group-hover:bg-amber-600 group-hover:text-white transition-colors">
                     <CalendarIcon className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">
                      <span className="block text-xs font-medium text-[#6B7C87] mb-1">
                         {new Date(item.sk_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
-                    <h3 className="text-sm text-[#14232E] font-medium line-clamp-1 group-hover:text-[#7E22CE] transition-colors">
+                    <h3 className="text-sm text-[#14232E] font-medium line-clamp-1 group-hover:text-amber-600 transition-colors">
                       {item.title}
                     </h3>
                     <p className="text-xs text-[#6B7C87] mt-1 line-clamp-1">{item.description}</p>
                   </div>
-                  <ChevronRightIcon className="w-5 h-5 text-[#A6C0CF] group-hover:text-[#7E22CE] shrink-0 self-center transition-colors" />
+                  <ChevronRightIcon className="w-5 h-5 text-[#A6C0CF] group-hover:text-amber-600 shrink-0 self-center transition-colors" />
                 </Link>
               ))
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-center p-6 bg-[#F5F7F8] rounded-xl border border-dashed border-[#CFDFE8]">
                 <CalendarIcon className="w-8 h-8 text-[#A6C0CF] mb-2" />
-                <p className="text-sm font-medium text-[#6B7C87]">Belum ada notulensi rapat yang tersedia.</p>
+                <p className="text-sm font-medium text-[#6B7C87]">Belum ada data rapat yang tersedia.</p>
               </div>
             )}
           </div>
@@ -374,7 +441,7 @@ export default function DashboardPage() {
                   >
                     <div className={`w-8 h-8 mx-auto flex items-center justify-center rounded-full text-sm transition-all duration-200 ${
                       selectedFilterDate === dateStr 
-                        ? 'bg-[#2A75B3] text-white font-bold shadow-md scale-110' 
+                        ? 'bg-emerald-600 text-white font-bold shadow-md scale-110' 
                         : isToday 
                           ? 'bg-[#12333D] text-white font-bold' 
                           : 'text-[#14232E] hover:bg-[#F5F7F8] hover:scale-110'
@@ -385,12 +452,12 @@ export default function DashboardPage() {
                     {(skCount > 0 || notulensiCount > 0) && (
                       <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
                         {skCount > 0 && (
-                          <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shadow-sm ${selectedFilterDate === dateStr ? 'bg-white text-[#2A75B3]' : 'bg-[#2A75B3] text-white'}`} title={`${skCount} Surat Keputusan`}>
+                          <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shadow-sm ${selectedFilterDate === dateStr ? 'bg-white text-emerald-600' : 'bg-emerald-600 text-white'}`} title={`${skCount} Surat Keputusan`}>
                             {skCount}
                           </div>
                         )}
                         {notulensiCount > 0 && (
-                          <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shadow-sm ${selectedFilterDate === dateStr ? 'bg-white text-[#7E22CE]' : 'bg-[#7E22CE] text-white'}`} title={`${notulensiCount} Notulensi Rapat`}>
+                          <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shadow-sm ${selectedFilterDate === dateStr ? 'bg-white text-amber-500' : 'bg-amber-500 text-white'}`} title={`${notulensiCount} Rapat`}>
                             {notulensiCount}
                           </div>
                         )}
@@ -427,7 +494,7 @@ export default function DashboardPage() {
                         {new Date(act.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
                       <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full ${
-                        act.type === 'SK' ? 'bg-[#EEF5FA] text-[#2A75B3]' : 'bg-[#F3E8FF] text-[#7E22CE]'
+                        act.type === 'SK' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
                       }`}>
                         ● {act.type}
                       </span>

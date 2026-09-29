@@ -49,34 +49,28 @@ export default function PublicHeader() {
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboardIcon },
-    { name: 'Pengumuman', href: '/pengumuman', icon: FileTextIcon },
-    { name: 'Notulensi Rapat', href: '/notulensi', icon: FileTextIcon },
+    { name: 'Surat Keputusan', href: '/pengumuman', icon: FileTextIcon },
+    { name: 'Rapat', href: '/notulensi', icon: FileTextIcon },
     { name: 'Tentang', href: '/tentang', icon: InfoIcon },
   ];
 
   return (
-    <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'shadow-2xl border-b border-[#ffffff20]' : 'border-b border-[#ffffff1a]'}`}>
+    <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'shadow-md border-b border-transparent' : 'border-b border-[#E5E7E1]'}`}>
       
-      {/* Background Image & Blur Layer */}
-      <div className={`absolute inset-0 z-0 overflow-hidden transition-all duration-500 ${scrolled ? 'bg-[#0B1F2A]/60 backdrop-blur-3xl' : 'bg-[#0B1F2A]/85 backdrop-blur-md'}`}>
-        <div 
-          className={`absolute inset-0 bg-cover bg-center transition-opacity duration-500 ${scrolled ? 'opacity-0' : 'opacity-20'}`}
-          style={{ backgroundImage: "url('/hero-bg.jpg')" }} 
-        />
-        <div className={`absolute inset-0 bg-gradient-to-r from-[#0B1F2A] via-[#0B1F2A]/90 to-[#12333D]/80 transition-opacity duration-500 ${scrolled ? 'opacity-70' : 'opacity-100'}`} />
-      </div>
+      {/* Background Layer */}
+      <div className={`absolute inset-0 z-0 transition-all duration-500 ${scrolled ? 'bg-white/70 backdrop-blur-lg' : 'bg-white/95'}`} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex justify-between items-center h-20">
           
           {/* Left section: Logo */}
           <div className="flex items-center flex-shrink-0">
-            <Link href="/" className="flex items-center gap-2 sm:gap-3">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center relative ml-2 sm:ml-3">
+            <Link href="/" className="flex items-center gap-2 sm:gap-3 ml-4 sm:ml-8">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center relative">
                 <img 
-                  src="/logo1.png" 
+                  src="/logo1_transparent.png" 
                   alt="ISKN Logo" 
-                  className="w-full h-full object-contain absolute inset-0 scale-[1.5] sm:scale-[1.8]"
+                  className="w-full h-full object-contain absolute inset-0 scale-110 sm:scale-125 drop-shadow-sm"
                   onError={(e) => {
                     e.currentTarget.style.opacity = '0';
                   }}
@@ -95,16 +89,19 @@ export default function PublicHeader() {
                   key={item.name}
                   href={item.href}
                   className={`relative flex items-center gap-2 px-3 h-full transition-all duration-200 group ${
-                    isActive ? 'text-white' : 'text-[#A6C0CF] hover:text-white'
+                    isActive ? 'text-[#12333D]' : 'text-[#6B7C87] hover:text-[#12333D]'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 transition-colors ${isActive ? 'text-[#D4AF37]' : 'text-[#A6C0CF] group-hover:text-white'}`} />
-                  <span className="text-sm font-medium tracking-wide">{item.name}</span>
+                  <Icon className={`w-4 h-4 transition-colors ${isActive ? 'text-[#D4AF37]' : 'text-[#A6C0CF] group-hover:text-[#D4AF37]'}`} />
                   
-                  {/* Active Indicator Line */}
-                  <div className={`absolute bottom-0 left-0 w-full h-[3px] rounded-t-sm transition-all duration-300 ${
-                    isActive ? 'bg-[#D4AF37] opacity-100 scale-x-100' : 'bg-[#D4AF37] opacity-0 scale-x-0 group-hover:opacity-50 group-hover:scale-x-100'
-                  }`} />
+                  <div className="relative flex items-center h-full">
+                    <span className="text-sm font-bold tracking-wide">{item.name}</span>
+                    
+                    {/* Active Indicator Line */}
+                    <div className={`absolute bottom-[22px] left-0 w-full h-[3px] rounded-full transition-all duration-300 ${
+                      isActive ? 'bg-[#D4AF37] opacity-100 scale-x-100' : 'bg-[#D4AF37] opacity-0 scale-x-0 group-hover:opacity-50 group-hover:scale-x-100'
+                    }`} />
+                  </div>
                 </Link>
               );
             })}
@@ -112,9 +109,9 @@ export default function PublicHeader() {
 
           {/* Right section: Date & Mobile toggle */}
           <div className="flex items-center gap-4">
-            <div className="hidden lg:flex items-center gap-2 text-[#CFDFE8] px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
-              <CalendarIcon className="w-4 h-4" />
-              <span className="text-sm font-medium">{currentDate || 'Memuat tanggal...'}</span>
+            <div className="hidden lg:flex items-center gap-2 text-[#14232E]">
+              <CalendarIcon className="w-4 h-4 text-[#D4AF37]" />
+              <span className="text-sm font-bold">{currentDate || 'Memuat tanggal...'}</span>
             </div>
 
             {/* Mobile menu button */}
@@ -122,7 +119,7 @@ export default function PublicHeader() {
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="inline-flex items-center justify-center p-2 rounded-lg text-[#A6C0CF] hover:text-white hover:bg-white/10 transition-colors focus:outline-none"
+                className="inline-flex items-center justify-center p-2 rounded-lg text-[#6B7C87] hover:text-[#14232E] hover:bg-[#F5F7F8] transition-colors focus:outline-none"
                 aria-controls="mobile-menu"
                 aria-expanded={isMobileMenuOpen}
               >
@@ -140,10 +137,10 @@ export default function PublicHeader() {
 
       {/* Mobile menu panel */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-[#0B1F2A]/95 backdrop-blur-xl border-t border-[#ffffff1a] shadow-xl absolute w-full left-0 z-50" id="mobile-menu">
-          <div className="px-4 pt-4 pb-2 border-b border-[#ffffff1a] flex items-center gap-2 text-[#CFDFE8]">
-             <CalendarIcon className="w-4 h-4" />
-             <span className="text-sm font-medium">{currentDate || 'Memuat tanggal...'}</span>
+        <div className="md:hidden bg-white/95 backdrop-blur-xl border-t border-[#E5E7E1] shadow-xl absolute w-full left-0 z-50" id="mobile-menu">
+          <div className="px-4 pt-4 pb-2 border-b border-[#E5E7E1] flex items-center gap-2 text-[#14232E] font-bold">
+             <CalendarIcon className="w-4 h-4 text-[#D4AF37]" />
+             <span className="text-sm">{currentDate || 'Memuat tanggal...'}</span>
           </div>
           <div className="px-2 pt-2 pb-4 space-y-1 mt-2">
             {navigation.map((item) => {
@@ -153,10 +150,10 @@ export default function PublicHeader() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-3 rounded-lg text-base font-bold transition-colors ${
                     isActive 
-                      ? 'bg-white/10 text-white border-l-4 border-[#D4AF37]' 
-                      : 'text-[#A6C0CF] hover:bg-white/5 hover:text-white border-l-4 border-transparent'
+                      ? 'bg-[#F5F7F8] text-[#12333D] border-l-4 border-[#D4AF37]' 
+                      : 'text-[#6B7C87] hover:bg-[#F5F7F8] hover:text-[#12333D] border-l-4 border-transparent'
                   }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >

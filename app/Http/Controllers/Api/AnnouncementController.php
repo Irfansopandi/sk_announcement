@@ -10,7 +10,7 @@ class AnnouncementController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Announcement::where('status', 'published');
+        $query = Announcement::with('documents')->where('status', 'published');
 
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
@@ -42,7 +42,8 @@ class AnnouncementController extends Controller
 
     public function show($id)
     {
-        $announcement = Announcement::where('id', $id)
+        $announcement = Announcement::with('documents')
+            ->where('id', $id)
             ->where('status', 'published')
             ->first();
 
@@ -58,5 +59,31 @@ class AnnouncementController extends Controller
             'message' => 'Berhasil mengambil detail SK',
             'data' => $announcement
         ], 200);
+    }
+
+    public function downloadDocument($id)
+    {
+        $document = \App\Models\Document::find($id);
+
+        if (!$document) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dokumen tidak ditemukan.'
+            ], 404);
+        }
+
+        if (!\Illuminate\Support\Facades\Storage::disk('local')->exists($document->file_path)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'File fisik dokumen tidak ditemukan.'
+            ], 404);
+        }
+
+        $path = \Illuminate\Support\Facades\Storage::disk('local')->path($document->file_path);
+
+        return response()->download($path, basename($document->file_name), [
+            'Content-Type' => $document->file_type,
+            'Content-Disposition' => 'attachment; filename="' . basename($document->file_name) . '"'
+        ]);
     }
 }
