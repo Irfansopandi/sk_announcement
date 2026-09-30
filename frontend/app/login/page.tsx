@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../lib/api/auth';
 import { ApiError } from '../../lib/api/client';
+import ParticleBackground from '../../components/ParticleBackground';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -12,8 +13,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const router = useRouter();
   const { isAuthenticated, isLoading, login } = useAuth();
@@ -24,18 +23,10 @@ export default function LoginPage() {
     }
   }, [isLoading, isAuthenticated, router]);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (typeof window !== 'undefined') {
-      const x = (e.clientX / window.innerWidth - 0.5) * 40;
-      const y = (e.clientY / window.innerHeight - 0.5) * 40;
-      setMousePos({ x, y });
-    }
-  };
-
   if (isLoading || isAuthenticated) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#F7F8F5]">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#266210] border-t-transparent mx-auto"></div>
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#059669] border-t-transparent mx-auto"></div>
       </div>
     );
   }
@@ -74,50 +65,19 @@ export default function LoginPage() {
     }
   };
 
-  const bubbles = [
-    { id: 1, size: 'w-16 h-16', color: 'bg-[#266210] border-[#266210]', top: '10%', left: '15%', delay: '0s', speed: 1.5 },
-    { id: 2, size: 'w-10 h-10', color: 'bg-[#FFD51E] border-[#FFD51E]', top: '25%', left: '75%', delay: '2s', speed: -1.2 },
-    { id: 3, size: 'w-12 h-12', color: 'bg-[#266210] border-[#266210]', top: '65%', left: '10%', delay: '1s', speed: 2 },
-    { id: 4, size: 'w-24 h-24', color: 'bg-[#FFD51E] border-[#FFD51E]', top: '75%', left: '80%', delay: '4s', speed: -1.8 },
-    { id: 5, size: 'w-8 h-8', color: 'bg-[#266210] border-[#266210]', top: '15%', left: '50%', delay: '3s', speed: 0.8 },
-    { id: 6, size: 'w-14 h-14', color: 'bg-[#FFD51E] border-[#FFD51E]', top: '85%', left: '40%', delay: '1.5s', speed: -0.5 },
-    { id: 7, size: 'w-20 h-20', color: 'bg-[#266210] border-[#266210]', top: '45%', left: '85%', delay: '2.5s', speed: 1.1 },
-    { id: 8, size: 'w-12 h-12', color: 'bg-[#FFD51E] border-[#FFD51E]', top: '35%', left: '20%', delay: '0.5s', speed: -1.5 },
-  ];
-
   return (
     <div 
       className="relative flex min-h-screen items-center justify-center bg-gradient-to-br from-green-50 via-[#F7F8F5] to-yellow-50 px-4 py-12 sm:px-6 lg:px-8 font-sans overflow-hidden"
-      onMouseMove={handleMouseMove}
     >
       
-      {/* Animated Background Bubbles */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        {bubbles.map((bubble) => (
-          <div
-            key={bubble.id}
-            className="absolute transition-transform duration-100 ease-out"
-            style={{
-              top: bubble.top,
-              left: bubble.left,
-              transform: `translate(${mousePos.x * bubble.speed}px, ${mousePos.y * bubble.speed}px)`,
-            }}
-          >
-            <div
-              className={`rounded-full border shadow-sm ${bubble.size} ${bubble.color}`}
-              style={{
-                animation: `float 6s ease-in-out infinite ${bubble.delay}`,
-              }}
-            />
-          </div>
-        ))}
-      </div>
+      {/* Interactive Particle Background */}
+      <ParticleBackground />
       
-      <div className="relative z-10 w-full max-w-md space-y-8 bg-[#FFFFFF] p-8 sm:p-10 rounded-2xl shadow-sm border border-[#E5E7E1]">
+      <div className="relative z-10 w-full max-w-md space-y-8 bg-[#FFFFFF] p-8 sm:p-10 rounded-2xl shadow-xl border border-[#E5E7E1]">
         
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto h-12 w-12 rounded-xl bg-[#266210] text-[#FFFFFF] flex items-center justify-center mb-6">
+          <div className="mx-auto h-12 w-12 rounded-xl bg-[#059669] text-[#FFFFFF] flex items-center justify-center mb-6">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
@@ -156,7 +116,7 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="relative block w-full rounded-lg border border-[#E5E7E1] px-4 py-3 text-[#1F2937] placeholder-[#98A2B3] focus:z-10 focus:border-[#266210] focus:outline-none focus:ring-1 focus:ring-[#266210] sm:text-sm transition-colors"
+                className="relative block w-full rounded-lg border border-[#E5E7E1] px-4 py-3 text-[#1F2937] placeholder-[#98A2B3] focus:z-10 focus:border-[#059669] focus:outline-none focus:ring-1 focus:ring-[#059669] sm:text-sm transition-colors"
                 placeholder="admin@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -175,7 +135,7 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   required
-                  className="relative block w-full rounded-lg border border-[#E5E7E1] pl-4 pr-10 py-3 text-[#1F2937] placeholder-[#98A2B3] focus:z-10 focus:border-[#266210] focus:outline-none focus:ring-1 focus:ring-[#266210] sm:text-sm transition-colors"
+                  className="relative block w-full rounded-lg border border-[#E5E7E1] pl-4 pr-10 py-3 text-[#1F2937] placeholder-[#98A2B3] focus:z-10 focus:border-[#059669] focus:outline-none focus:ring-1 focus:ring-[#059669] sm:text-sm transition-colors"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -206,7 +166,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting || !email || !password}
-              className="group relative flex w-full justify-center rounded-lg bg-[#266210] px-4 py-3 text-sm font-semibold text-[#FFFFFF] hover:bg-[#1E4F0D] focus:outline-none focus:ring-2 focus:ring-[#266210] focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
+              className="group relative flex w-full justify-center rounded-lg bg-[#059669] px-4 py-3 text-sm font-semibold text-[#FFFFFF] hover:bg-[#047857] focus:outline-none focus:ring-2 focus:ring-[#059669] focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting ? (
                 <span className="flex items-center">
