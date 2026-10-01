@@ -39,10 +39,10 @@ export const adminAnnouncementService = {
     });
   },
 
-  create: async (data: Partial<Announcement>): Promise<ApiResponse<Announcement>> => {
+  create: async (data: Partial<Announcement> | FormData): Promise<ApiResponse<Announcement>> => {
     return fetchClient<ApiResponse<Announcement>>('/admin/announcements', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: data instanceof FormData ? data : JSON.stringify(data),
     });
   },
 

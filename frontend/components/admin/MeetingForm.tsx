@@ -5,16 +5,16 @@ import Link from 'next/link';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-interface AnnouncementFormProps {
+interface MeetingFormProps {
   initialData?: {
-    sk_number: string;
-    sk_date: string;
+    invitation_number: string;
+    meeting_date: string;
     description: string;
     status: 'draft' | 'published';
   };
   onSubmit: (data: {
-    sk_number: string;
-    sk_date: string;
+    invitation_number: string;
+    meeting_date: string;
     description: string;
     status: 'draft' | 'published';
     document?: File | null;
@@ -25,18 +25,18 @@ interface AnnouncementFormProps {
   submitText: string;
 }
 
-export default function AnnouncementForm({ 
+export default function MeetingForm({ 
   initialData, 
   onSubmit, 
   isSubmitting, 
   errors,
   title,
   submitText
-}: AnnouncementFormProps) {
+}: MeetingFormProps) {
   
   const [formData, setFormData] = useState({
-    sk_number: initialData?.sk_number || '',
-    sk_date: initialData?.sk_date || '',
+    invitation_number: initialData?.invitation_number || '',
+    meeting_date: initialData?.meeting_date || '',
     description: initialData?.description || '',
     status: initialData?.status || 'published',
     document: null as File | null
@@ -68,62 +68,62 @@ export default function AnnouncementForm({
       <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5E7E1] shadow-sm overflow-hidden">
         <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
           
-          {/* SK Number */}
+          {/* Rapat Number */}
           <div>
-            <label htmlFor="sk_number" className="block text-sm font-medium text-[#1F2937] mb-1">
-              No. SK <span className="text-red-500">*</span>
+            <label htmlFor="invitation_number" className="block text-sm font-medium text-[#1F2937] mb-1">
+              No. Rapat <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              id="sk_number"
-              name="sk_number"
-              value={formData.sk_number}
+              id="invitation_number"
+              name="invitation_number"
+              value={formData.invitation_number}
               onChange={handleChange}
               maxLength={100}
-              placeholder="Masukkan Nomor Surat Keputusan"
+              placeholder="Masukkan Nomor Surat Undangan"
               className={`block w-full px-4 py-2.5 rounded-lg border focus:ring-2 focus:outline-none transition-colors placeholder:text-[#98A2B3] text-[#1F2937] ${
-                errors.sk_number 
+                errors.invitation_number 
                   ? 'border-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50' 
                   : 'border-[#E5E7E1] focus:ring-[#096F9A] focus:border-[#096F9A] bg-white'
               }`}
               required
             />
-            {errors.sk_number && (
-              <p className="mt-1.5 text-sm text-red-600 font-medium">{errors.sk_number[0]}</p>
+            {errors.invitation_number && (
+              <p className="mt-1.5 text-sm text-red-600 font-medium">{errors.invitation_number[0]}</p>
             )}
           </div>
 
-          {/* SK Date */}
+          {/* Rapat Date */}
           <div>
-            <label htmlFor="sk_date" className="block text-sm font-medium text-[#1F2937] mb-1">
-              Tanggal SK <span className="text-red-500">*</span>
+            <label htmlFor="meeting_date" className="block text-sm font-medium text-[#1F2937] mb-1">
+              Tanggal Rapat <span className="text-red-500">*</span>
             </label>
             <DatePicker
-              id="sk_date"
-              name="sk_date"
-              selected={formData.sk_date ? new Date(formData.sk_date) : null}
+              id="meeting_date"
+              name="meeting_date"
+              selected={formData.meeting_date ? new Date(formData.meeting_date) : null}
               onChange={(date: Date | null) => {
                 if (date) {
                   // Format as YYYY-MM-DD for backend
                   const year = date.getFullYear();
                   const month = String(date.getMonth() + 1).padStart(2, '0');
                   const day = String(date.getDate()).padStart(2, '0');
-                  setFormData(prev => ({ ...prev, sk_date: `${year}-${month}-${day}` }));
+                  setFormData(prev => ({ ...prev, meeting_date: `${year}-${month}-${day}` }));
                 } else {
-                  setFormData(prev => ({ ...prev, sk_date: '' }));
+                  setFormData(prev => ({ ...prev, meeting_date: '' }));
                 }
               }}
               dateFormat="dd/MM/yyyy"
               placeholderText="dd/mm/yyyy"
               className={`block w-full sm:w-1/2 px-4 py-2.5 rounded-lg border focus:ring-2 focus:outline-none transition-colors placeholder:text-[#98A2B3] text-[#1F2937] ${
-                errors.sk_date 
+                errors.meeting_date 
                   ? 'border-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50' 
                   : 'border-[#E5E7E1] focus:ring-[#096F9A] focus:border-[#096F9A] bg-white'
               }`}
               required
             />
-            {errors.sk_date && (
-              <p className="mt-1.5 text-sm text-red-600 font-medium">{errors.sk_date[0]}</p>
+            {errors.meeting_date && (
+              <p className="mt-1.5 text-sm text-red-600 font-medium">{errors.meeting_date[0]}</p>
             )}
           </div>
 
@@ -154,7 +154,7 @@ export default function AnnouncementForm({
           {/* Document Upload */}
           <div>
             <label htmlFor="document" className="block text-sm font-medium text-[#1F2937] mb-1">
-              Dokumen SK {!initialData && <span className="text-red-500">*</span>}
+              Dokumen Rapat {!initialData && <span className="text-red-500">*</span>}
             </label>
             <input
               type="file"
@@ -193,7 +193,7 @@ export default function AnnouncementForm({
           {/* Form Actions */}
           <div className="pt-6 border-t border-[#E5E7E1] flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
             <Link 
-              href="/admin/announcements"
+              href="/admin/notulensi"
               className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-medium text-[#4B5563] bg-white border border-[#E5E7E1] hover:bg-[#F7F8F5] transition-colors text-center"
             >
               Batal

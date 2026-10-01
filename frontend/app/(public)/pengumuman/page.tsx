@@ -78,7 +78,8 @@ function AnnouncementsContent() {
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const debouncedSearch = useDebounce(searchTerm, 500);
   
-  const [year, setYear] = useState(searchParams.get('year') || '');
+  const currentYearStr = new Date().getFullYear().toString();
+  const [year, setYear] = useState(searchParams.get('year') || currentYearStr);
   const [sort, setSort] = useState(searchParams.get('sort') || 'terbaru');
   const [page, setPage] = useState(Number(searchParams.get('page')) || 1);
 
@@ -142,7 +143,7 @@ function AnnouncementsContent() {
 
   const handleReset = () => {
     setSearchTerm('');
-    setYear('');
+    setYear(currentYearStr);
     setSort('terbaru');
     setPage(1);
   };

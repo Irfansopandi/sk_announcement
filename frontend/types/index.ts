@@ -28,6 +28,21 @@ export interface Document {
   updated_at: string;
 }
 
+export interface Meeting {
+  id: number;
+  meeting_date: string;
+  invitation_number: string;
+  description: string;
+  status: 'draft' | 'published';
+  document_name: string | null;
+  document_path: string | null;
+  document_type: string | null;
+  document_size: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
@@ -59,4 +74,9 @@ export interface PaginatedData<T> {
   total: number;
 }
 
-export type PaginatedResponse<T> = ApiResponse<PaginatedData<T>>;
+export type PaginatedResponse<T> = ApiResponse<PaginatedData<T>> & {
+  counts?: {
+    published: number;
+    draft: number;
+  };
+};

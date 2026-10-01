@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAnnouncementRequest;
 use App\Http\Requests\UpdateAnnouncementRequest;
 use App\Models\Announcement;
+use App\Models\Document;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class AnnouncementController extends Controller
 {
@@ -25,6 +27,12 @@ class AnnouncementController extends Controller
         if ($request->has('year') && !empty($request->year)) {
             $query->whereYear('sk_date', $request->year);
         }
+
+        // Get counts before applying status filter
+        $counts = [
+            'published' => (clone $query)->where('status', 'published')->count(),
+            'draft' => (clone $query)->where('status', 'draft')->count(),
+        ];
 
         if ($request->has('status') && !empty($request->status)) {
             $query->where('status', $request->status);
@@ -45,6 +53,7 @@ class AnnouncementController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Berhasil mengambil data SK',
+            'counts' => $counts,
             'data' => $announcements
         ], 200);
     }
@@ -57,6 +66,28 @@ class AnnouncementController extends Controller
         $validated['created_by'] = $request->user()->id;
 
         $announcement = Announcement::create($validated);
+
+        if ($request->hasFile('document')) {
+            $file = $request->file('document');
+            $originalName = $file->getClientOriginalName();
+            $fileSize = $file->getSize();
+            $fileType = $file->getMimeType();
+            
+            // Generate unique path
+            $extension = $file->getClientOriginalExtension();
+            $uniqueName = Str::uuid() . '.' . $extension;
+            
+            // Store the file using Laravel Storage
+            $filePath = $file->storeAs('documents/' . $announcement->id, $uniqueName, 'local');
+
+            Document::create([
+                'announcement_id' => $announcement->id,
+                'file_name' => $originalName,
+                'file_path' => $filePath,
+                'file_type' => substr($fileType, 0, 255), // ensure it fits in DB
+                'file_size' => $fileSize,
+            ]);
+        }
 
         return response()->json([
             'success' => true,

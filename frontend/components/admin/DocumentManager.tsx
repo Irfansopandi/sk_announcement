@@ -223,67 +223,7 @@ export default function DocumentManager({ announcementId }: DocumentManagerProps
         <h2 className="text-xl font-bold text-[#1F2937]">Dokumen Lampiran</h2>
       </div>
 
-      {/* Upload Area */}
-      <div className="bg-[#FFFFFF] p-6 rounded-2xl border border-[#E5E7E1] shadow-sm">
-        <h3 className="text-sm font-medium text-[#1F2937] mb-4">Unggah Dokumen Baru</h3>
-        
-        {uploadError && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3 text-red-600">
-            <svg className="h-5 w-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <p className="text-sm">{uploadError}</p>
-          </div>
-        )}
 
-        <div
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={() => !isUploading && fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
-            isDragging 
-              ? 'border-[#266210] bg-[#EEF5EA]' 
-              : 'border-[#E5E7E1] hover:bg-[#F7F8F5] bg-white'
-          } ${isUploading ? 'opacity-50 cursor-wait' : ''}`}
-        >
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleFileChange} 
-            accept=".pdf,.xls,.xlsx,.csv,.doc,.docx"
-            className="hidden" 
-            disabled={isUploading}
-          />
-          
-          <div className="flex flex-col items-center justify-center space-y-3">
-            <div className={`p-3 rounded-full ${isDragging ? 'bg-[#266210] text-white' : 'bg-[#F7F8F5] text-[#98A2B3]'}`}>
-              {isUploading ? (
-                <svg className="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              ) : (
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                </svg>
-              )}
-            </div>
-            <div>
-              <p className="text-sm font-medium text-[#1F2937]">
-                {isUploading ? 'Mengunggah...' : 'Klik untuk unggah atau seret dan lepas'}
-              </p>
-              <p className="text-xs text-[#4B5563] mt-1">PDF, Excel, atau Word hingga 10MB</p>
-            </div>
-            
-            {isUploading && uploadProgress > 0 && (
-              <div className="w-full max-w-xs bg-gray-200 rounded-full h-1.5 mt-4">
-                <div className="bg-[#266210] h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
 
       {/* Document List */}
       <div className="bg-[#FFFFFF] rounded-2xl border border-[#E5E7E1] shadow-sm overflow-hidden">
@@ -321,34 +261,7 @@ export default function DocumentManager({ announcementId }: DocumentManagerProps
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {doc.file_type.includes('pdf') && (
-                    <button
-                      onClick={() => handlePreview(doc)}
-                      className="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium text-[#266210] bg-[#EEF5EA] hover:bg-[#E0EED9] rounded-lg transition-colors"
-                    >
-                      Lihat
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleDownload(doc)}
-                    className="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium text-[#1F2937] bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                  >
-                    Unduh
-                  </button>
-                  <button
-                    onClick={() => {
-                      setDeleteId(doc.id);
-                      setDocumentToDelete(doc);
-                    }}
-                    className="inline-flex items-center justify-center p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors ml-1"
-                    aria-label="Hapus dokumen"
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                    </svg>
-                  </button>
-                </div>
+
               </li>
             ))}
           </ul>

@@ -3,16 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { adminAnnouncementService } from '../../../../lib/api/announcements';
-import { Announcement } from '../../../../types';
+import { adminMeetingService } from '../../../../lib/api/meetings';
+import { Meeting } from '../../../../types';
 import { ApiError } from '../../../../lib/api/client';
-import DocumentManager from '../../../../components/admin/DocumentManager';
 
-export default function AnnouncementDetailPage() {
+export default function MeetingDetailPage() {
   const params = useParams();
   const id = Number(params?.id);
   
-  const [data, setData] = useState<Announcement | null>(null);
+  const [data, setData] = useState<Meeting | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,18 +22,18 @@ export default function AnnouncementDetailPage() {
       try {
         setIsLoading(true);
         setError(null);
-        const res = await adminAnnouncementService.getById(id);
+        const res = await adminMeetingService.getById(id);
         setData(res.data || null);
       } catch (err) {
         if (err instanceof ApiError) {
           if (err.status === 404) {
-            setError("Surat Keputusan tidak ditemukan.");
+            setError("Rapat tidak ditemukan.");
           } else if (err.status === 401) {
             setError("Sesi telah habis. Silakan login kembali.");
           } else if (err.status === 403) {
             setError("Anda tidak memiliki akses ke halaman ini.");
           } else {
-            setError("Gagal memuat detail Surat Keputusan.");
+            setError("Gagal memuat detail Rapat.");
           }
         } else {
           setError("Gagal terhubung ke server.");
@@ -63,10 +62,10 @@ export default function AnnouncementDetailPage() {
         </svg>
         <h3 className="mt-4 text-lg font-medium text-[#1F2937]">{error || "Data tidak ditemukan"}</h3>
         <Link 
-          href="/admin/announcements" 
+          href="/admin/notulensi" 
           className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-[#266210] bg-[#EEF5EA] hover:bg-[#E0EED9]"
         >
-          Kembali ke Daftar SK
+          Kembali ke Daftar Rapat
         </Link>
       </div>
     );
@@ -79,7 +78,7 @@ export default function AnnouncementDetailPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link
-            href="/admin/announcements"
+            href="/admin/notulensi"
             className="p-2 shrink-0 border border-[#E5E7E1] rounded-lg text-[#4B5563] hover:text-[#1F2937] hover:bg-[#F7F8F5] transition-colors"
             aria-label="Kembali"
           >
@@ -88,36 +87,36 @@ export default function AnnouncementDetailPage() {
             </svg>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-[#1F2937]">Detail SK</h1>
-            <p className="text-sm text-[#4B5563] mt-1">Informasi lengkap Surat Keputusan dan dokumen terkait.</p>
+            <h1 className="text-2xl font-bold text-[#1F2937]">Detail Rapat</h1>
+            <p className="text-sm text-[#4B5563] mt-1">Informasi lengkap Rapat dan dokumen terkait.</p>
           </div>
         </div>
         
         <Link 
-          href={`/admin/announcements/${data.id}/edit`} 
+          href={`/admin/notulensi/${data.id}/edit`} 
           className="inline-flex items-center gap-2 bg-[#FFFFFF] hover:bg-[#F7F8F5] border border-[#E5E7E1] text-[#1F2937] px-5 py-2.5 rounded-lg font-medium transition-colors shrink-0"
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.89 1.113l-2.842.835a.375.375 0 01-.456-.456l.835-2.842a4.5 4.5 0 011.113-1.89l12.442-12.442z" />
             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 7.125L16.875 4.5" />
           </svg>
-          Edit SK
+          Edit Rapat
         </Link>
       </div>
 
-      {/* SK Info Card */}
+      {/* Rapat Info Card */}
       <div className="bg-[#FFFFFF] p-6 sm:p-8 rounded-2xl border border-[#E5E7E1] shadow-sm">
-        <h2 className="text-lg font-semibold text-[#1F2937] mb-6 border-b border-[#E5E7E1] pb-4">Informasi Surat Keputusan</h2>
+        <h2 className="text-lg font-semibold text-[#1F2937] mb-6 border-b border-[#E5E7E1] pb-4">Informasi Rapat</h2>
         
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6">
           <div className="sm:col-span-1">
-            <dt className="text-sm font-medium text-[#4B5563]">Nomor SK</dt>
-            <dd className="mt-1 text-base font-semibold text-[#1F2937]">{data.sk_number}</dd>
+            <dt className="text-sm font-medium text-[#4B5563]">Nomor Rapat</dt>
+            <dd className="mt-1 text-base font-semibold text-[#1F2937]">{data.invitation_number}</dd>
           </div>
           <div className="sm:col-span-1">
-            <dt className="text-sm font-medium text-[#4B5563]">Tanggal SK</dt>
+            <dt className="text-sm font-medium text-[#4B5563]">Tanggal Rapat</dt>
             <dd className="mt-1 text-base text-[#1F2937]">
-              {new Date(data.sk_date).toLocaleDateString('id-ID', {
+              {new Date(data.meeting_date).toLocaleDateString('id-ID', {
                 day: 'numeric', month: 'long', year: 'numeric'
               })}
             </dd>
@@ -142,8 +141,26 @@ export default function AnnouncementDetailPage() {
         </dl>
       </div>
 
-      {/* Document Manager Section */}
-      <DocumentManager announcementId={data.id} />
+      {/* Document Section */}
+      <div className="bg-[#FFFFFF] p-6 sm:p-8 rounded-2xl border border-[#E5E7E1] shadow-sm">
+        <h2 className="text-lg font-semibold text-[#1F2937] mb-6 border-b border-[#E5E7E1] pb-4">Dokumen Lampiran</h2>
+        
+        {data.document_name ? (
+          <div className="flex items-center justify-between p-4 border border-[#E5E7E1] rounded-lg">
+            <div className="flex items-center gap-3">
+              <svg className="w-8 h-8 text-[#096F9A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+              </svg>
+              <div>
+                <p className="text-sm font-medium text-[#1F2937]">{data.document_name}</p>
+                <p className="text-xs text-[#6B7C87]">Terlampir</p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="text-[#6B7C87] text-sm italic">Tidak ada dokumen lampiran.</p>
+        )}
+      </div>
       
     </div>
   );

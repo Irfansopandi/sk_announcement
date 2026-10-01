@@ -51,7 +51,6 @@ export default function PublicHeader() {
     { name: 'Dashboard', href: '/', icon: LayoutDashboardIcon },
     { name: 'Surat Keputusan', href: '/pengumuman', icon: FileTextIcon },
     { name: 'Rapat', href: '/notulensi', icon: FileTextIcon },
-    { name: 'Tentang', href: '/tentang', icon: InfoIcon },
   ];
 
   return (

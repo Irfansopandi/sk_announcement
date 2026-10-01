@@ -2,20 +2,20 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import AnnouncementForm from '../../../../components/admin/AnnouncementForm';
-import { adminAnnouncementService } from '../../../../lib/api/announcements';
+import MeetingForm from '../../../../components/admin/MeetingForm';
+import { adminMeetingService } from '../../../../lib/api/meetings';
 import { ApiError } from '../../../../lib/api/client';
 import { toastSuccess } from '../../../../lib/swal';
 
-export default function CreateAnnouncementPage() {
+export default function CreateMeetingPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [globalError, setGlobalError] = useState<string | null>(null);
 
   const handleSubmit = async (data: {
-    sk_number: string;
-    sk_date: string;
+    invitation_number: string;
+    meeting_date: string;
     description: string;
     status: 'draft' | 'published';
     document?: File | null;
@@ -26,19 +26,19 @@ export default function CreateAnnouncementPage() {
       setGlobalError(null);
 
       const formData = new FormData();
-      formData.append('sk_number', data.sk_number);
-      formData.append('sk_date', data.sk_date);
+      formData.append('invitation_number', data.invitation_number);
+      formData.append('meeting_date', data.meeting_date);
       formData.append('description', data.description);
       formData.append('status', data.status);
       if (data.document) {
         formData.append('document', data.document);
       }
 
-      await adminAnnouncementService.create(formData);
+      await adminMeetingService.create(formData);
       
       // Success
-      toastSuccess('Surat Keputusan berhasil ditambahkan.');
-      router.push('/admin/announcements');
+      toastSuccess('Rapat berhasil ditambahkan.');
+      router.push('/admin/notulensi');
       
     } catch (error) {
       if (error instanceof ApiError) {
@@ -78,8 +78,8 @@ export default function CreateAnnouncementPage() {
         </div>
       )}
       
-      <AnnouncementForm
-        title="Tambah Surat Keputusan"
+      <MeetingForm
+        title="Tambah Rapat"
         submitText="Simpan Data"
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}

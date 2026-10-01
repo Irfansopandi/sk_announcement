@@ -11,11 +11,12 @@ import {
   LayoutDashboardIcon
 } from 'lucide-react';
 import { publicAnnouncementService } from '../../lib/api/announcements';
-import { Announcement } from '../../types';
+import { publicMeetingService } from '../../lib/api/meetings';
+import { Announcement, Meeting } from '../../types';
 
 export default function DashboardPage() {
   const [allSKsForYear, setAllSKsForYear] = useState<Announcement[]>([]);
-  const [allNotulensiForYear, setAllNotulensiForYear] = useState<any[]>([]);
+  const [allNotulensiForYear, setAllNotulensiForYear] = useState<Meeting[]>([]);
   const [selectedFilterDate, setSelectedFilterDate] = useState<string | null>(null);
   const [yearSK, setYearSK] = useState<number>(0);
   
@@ -27,17 +28,17 @@ export default function DashboardPage() {
 
   const heroSlidesData = [
     {
-      image: "/hero-1.webp",
+      image: "/hero1.webp",
       title: <>Informasi Surat Keputusan<br />dan Rapat</>,
       description: "Akses informasi terbaru mengenai Surat Keputusan (SK) dan hasil rapat secara transparan dan mudah."
     },
     {
-      image: "/hero-2.webp",
+      image: "/hero2.webp",
       title: <>Tingkatkan Efisiensi<br />dan Kolaborasi Tim</>,
       description: "Pantau keputusan penting dan pastikan semua anggota tim selalu terhubung dengan informasi terkini."
     },
     {
-      image: "/hero-3.webp",
+      image: "/hero3.webp",
       title: <>Transparansi Data<br />Untuk Kemajuan Bersama</>,
       description: "Sistem yang dirancang untuk memberikan kemudahan akses data korporat secara real-time dan akurat."
     }
@@ -93,22 +94,10 @@ export default function DashboardPage() {
           setYearSK(yearRes.data.total);
         }
 
-        // Mock Notulensi data fetch based on calendar year
-        if (currentDate.getFullYear() === new Date().getFullYear()) {
-          setAllNotulensiForYear([
-            {
-              id: 1,
-              title: "Rapat Koordinasi Bulanan",
-              sk_date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-15`,
-              description: "Pembahasan evaluasi kinerja dan target bulan depan."
-            },
-            {
-              id: 2,
-              title: "Rapat Paripurna",
-              sk_date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-20`,
-              description: "Pengesahan draft keputusan tahunan."
-            }
-          ]);
+        // Fetch real Notulensi data based on calendar year
+        const yearMeetingRes = await publicMeetingService.getAll({ year: currentDate.getFullYear().toString(), per_page: 1000 });
+        if (yearMeetingRes.success && yearMeetingRes.data) {
+          setAllNotulensiForYear(yearMeetingRes.data.data);
         } else {
           setAllNotulensiForYear([]);
         }
@@ -141,12 +130,14 @@ export default function DashboardPage() {
 
   const getFilteredNotulensi = () => {
     if (selectedFilterDate) {
-      return allNotulensiForYear.filter(n => n.sk_date === selectedFilterDate)
-        .sort((a,b) => new Date(b.sk_date).getTime() - new Date(a.sk_date).getTime());
+      return allNotulensiForYear.filter(n => {
+        const dateOnly = n.meeting_date.split('T')[0].split(' ')[0];
+        return dateOnly === selectedFilterDate;
+      }).sort((a,b) => new Date(b.meeting_date).getTime() - new Date(a.meeting_date).getTime());
     } else {
       // Default: Show 10 absolute latest Rapat
       return [...allNotulensiForYear]
-        .sort((a,b) => new Date(b.sk_date).getTime() - new Date(a.sk_date).getTime())
+        .sort((a,b) => new Date(b.meeting_date).getTime() - new Date(a.meeting_date).getTime())
         .slice(0, 10);
     }
   };
@@ -179,7 +170,10 @@ export default function DashboardPage() {
     });
     
     // Get all Notulensi for this date
-    const dayNotulensi = allNotulensiForYear.filter(n => n.sk_date === dateStr);
+    const dayNotulensi = allNotulensiForYear.filter(n => {
+      const dateOnly = n.meeting_date.split('T')[0].split(' ')[0];
+      return dateOnly === dateStr;
+    });
     
     return { 
       skCount: daySKs.length, 
@@ -200,9 +194,9 @@ export default function DashboardPage() {
     ...latestNotulensi.map(n => ({
       id: `notulensi-${n.id}`,
       type: 'Rapat',
-      title: n.title,
-      date: n.sk_date,
-      link: `/notulensi?search=${encodeURIComponent(n.title)}`
+      title: n.description,
+      date: n.meeting_date,
+      link: `/notulensi?search=${encodeURIComponent(n.invitation_number)}`
     }))
   ];
 
@@ -261,38 +255,42 @@ export default function DashboardPage() {
       {/* Stats Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* SK Card */}
-        <div className="group rounded-2xl p-6 shadow-sm flex items-start gap-4 transition-all duration-300 bg-emerald-50/60 border border-emerald-200 hover:border-emerald-500 hover:shadow-md hover:bg-emerald-50">
-          <div className="p-3 bg-emerald-100 text-emerald-600 rounded-xl shrink-0 group-hover:scale-110 transition-transform duration-300">
-            <FileTextIcon className="w-6 h-6" />
+        <Link href={`/pengumuman?year=${currentDate.getFullYear()}`} className="group rounded-2xl p-6 shadow-sm flex items-start gap-4 transition-all duration-300 bg-emerald-50/60 border border-emerald-200 hover:border-emerald-500 hover:shadow-md hover:bg-emerald-50 cursor-pointer block">
+          <div className="flex w-full items-start gap-4">
+            <div className="p-3 bg-emerald-100 text-emerald-600 rounded-xl shrink-0 group-hover:scale-110 transition-transform duration-300">
+              <FileTextIcon className="w-6 h-6" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-slate-500 mb-1">Total SK Per Tahun</p>
+              {loading ? (
+                <div className="h-8 w-16 bg-emerald-200/50 rounded animate-pulse" />
+              ) : (
+                <h3 className="text-3xl font-bold text-slate-800">{yearSK}</h3>
+              )}
+              <p className="text-xs text-slate-500 mt-1">Total SK tahun {currentDate.getFullYear()}</p>
+            </div>
+            <div className="text-emerald-300 group-hover:text-emerald-600 transition-colors self-center p-2">
+              <ChevronRightIcon className="w-5 h-5" />
+            </div>
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-slate-500 mb-1">Total SK Per Tahun</p>
-            {loading ? (
-              <div className="h-8 w-16 bg-emerald-200/50 rounded animate-pulse" />
-            ) : (
-              <h3 className="text-3xl font-bold text-slate-800">{yearSK}</h3>
-            )}
-            <p className="text-xs text-slate-500 mt-1">Total SK tahun {currentDate.getFullYear()}</p>
-          </div>
-          <Link href="/pengumuman" className="text-emerald-300 group-hover:text-emerald-600 transition-colors self-center p-2">
-            <ChevronRightIcon className="w-5 h-5" />
-          </Link>
-        </div>
+        </Link>
 
         {/* Notulensi Card */}
-        <div className="group rounded-2xl p-6 shadow-sm flex items-start gap-4 transition-all duration-300 bg-amber-50/60 border border-amber-200 hover:border-amber-500 hover:shadow-md hover:bg-amber-50">
-          <div className="p-3 bg-amber-100 text-amber-600 rounded-xl shrink-0 group-hover:scale-110 transition-transform duration-300">
-            <FileTextIcon className="w-6 h-6" />
+        <Link href={`/notulensi?year=${currentDate.getFullYear()}`} className="group rounded-2xl p-6 shadow-sm flex items-start gap-4 transition-all duration-300 bg-amber-50/60 border border-amber-200 hover:border-amber-500 hover:shadow-md hover:bg-amber-50 cursor-pointer block">
+          <div className="flex w-full items-start gap-4">
+            <div className="p-3 bg-amber-100 text-amber-600 rounded-xl shrink-0 group-hover:scale-110 transition-transform duration-300">
+              <FileTextIcon className="w-6 h-6" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-slate-500 mb-1">Total Rapat Per Tahun</p>
+              <h3 className="text-3xl font-bold text-slate-800">{allNotulensiForYear.length}</h3>
+              <p className="text-xs text-slate-500 mt-1">Total rapat tahun {currentDate.getFullYear()}</p>
+            </div>
+            <div className="text-amber-300 group-hover:text-amber-600 transition-colors self-center p-2">
+              <ChevronRightIcon className="w-5 h-5" />
+            </div>
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-slate-500 mb-1">Total Rapat Per Tahun</p>
-            <h3 className="text-3xl font-bold text-slate-800">{allNotulensiForYear.length}</h3>
-            <p className="text-xs text-slate-500 mt-1">Total rapat tahun {currentDate.getFullYear()}</p>
-          </div>
-          <Link href="/notulensi" className="text-amber-300 group-hover:text-amber-600 transition-colors self-center p-2">
-            <ChevronRightIcon className="w-5 h-5" />
-          </Link>
-        </div>
+        </Link>
       </div>
 
       {/* Main Content Grid */}
@@ -375,16 +373,16 @@ export default function DashboardPage() {
               ))
             ) : latestNotulensi.length > 0 ? (
               latestNotulensi.map((item) => (
-                <Link key={item.id} href={`/notulensi?search=${encodeURIComponent(item.title)}`} className="group flex items-start gap-4 p-3 rounded-xl hover:bg-[#F5F7F8] transition-colors border border-transparent hover:border-[#E5E7E1]">
+                <Link key={item.id} href={`/notulensi?search=${encodeURIComponent(item.invitation_number)}`} className="group flex items-start gap-4 p-3 rounded-xl hover:bg-[#F5F7F8] transition-colors border border-transparent hover:border-[#E5E7E1]">
                   <div className="w-10 h-10 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 group-hover:bg-amber-600 group-hover:text-white transition-colors">
                     <CalendarIcon className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">
                      <span className="block text-xs font-medium text-[#6B7C87] mb-1">
-                        {new Date(item.sk_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {new Date(item.meeting_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
                     <h3 className="text-sm text-[#14232E] font-medium line-clamp-1 group-hover:text-amber-600 transition-colors">
-                      {item.title}
+                      {item.invitation_number}
                     </h3>
                     <p className="text-xs text-[#6B7C87] mt-1 line-clamp-1">{item.description}</p>
                   </div>

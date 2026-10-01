@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../lib/api/auth';
 import { ApiError } from '../../lib/api/client';
 import ParticleBackground from '../../components/ParticleBackground';
+import { toastSuccess } from '../../lib/swal';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -46,6 +47,7 @@ export default function LoginPage() {
       }
 
       login(response.token, response.user);
+      toastSuccess('Selamat datang, ' + response.user.name + '!');
       router.replace('/admin');
     } catch (err) {
       if (err instanceof ApiError) {
@@ -73,17 +75,20 @@ export default function LoginPage() {
       {/* Interactive Particle Background */}
       <ParticleBackground />
       
-      <div className="relative z-10 w-full max-w-md space-y-8 bg-[#FFFFFF] p-8 sm:p-10 rounded-2xl shadow-xl border border-[#E5E7E1]">
+      <div className="relative z-10 w-full max-w-lg space-y-8 bg-[#FFFFFF] p-8 sm:p-10 rounded-2xl shadow-xl border border-[#E5E7E1]">
         
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto h-12 w-12 rounded-xl bg-[#059669] text-[#FFFFFF] flex items-center justify-center mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
+          <div className="mx-auto h-32 w-auto max-w-[12rem] flex items-center justify-center mb-0 -mt-10">
+            <img 
+              src="/logo1_transparent.png" 
+              alt="Logo" 
+              className="w-full h-full object-contain drop-shadow-sm"
+            />
           </div>
-          <h2 className="text-2xl font-bold tracking-tight text-[#1F2937] leading-tight">
-            Sistem Pengumuman<br />Surat Keputusan PA Karawang
+          <h2 className="text-xl sm:text-[1.35rem] font-bold tracking-tight text-[#1F2937] leading-tight mt-[-0.5rem]">
+            <span className="block whitespace-nowrap">INFORMASI SURAT KEPUTUSAN & RAPAT</span>
+            <span className="block text-lg mt-1">Pengadilan Agama Karawang</span>
           </h2>
         </div>
 
@@ -116,7 +121,7 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="relative block w-full rounded-lg border border-[#E5E7E1] px-4 py-3 text-[#1F2937] placeholder-[#98A2B3] focus:z-10 focus:border-[#059669] focus:outline-none focus:ring-1 focus:ring-[#059669] sm:text-sm transition-colors"
+                className="relative block w-full rounded-lg border border-[#E5E7E1] px-4 py-3 text-[#1F2937] placeholder-[#98A2B3] focus:z-10 focus:border-[#096F9A] focus:outline-none focus:ring-1 focus:ring-[#096F9A] sm:text-sm transition-colors"
                 placeholder="admin@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -135,7 +140,7 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   required
-                  className="relative block w-full rounded-lg border border-[#E5E7E1] pl-4 pr-10 py-3 text-[#1F2937] placeholder-[#98A2B3] focus:z-10 focus:border-[#059669] focus:outline-none focus:ring-1 focus:ring-[#059669] sm:text-sm transition-colors"
+                  className="relative block w-full rounded-lg border border-[#E5E7E1] pl-4 pr-10 py-3 text-[#1F2937] placeholder-[#98A2B3] focus:z-10 focus:border-[#096F9A] focus:outline-none focus:ring-1 focus:ring-[#096F9A] sm:text-sm transition-colors"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -166,7 +171,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting || !email || !password}
-              className="group relative flex w-full justify-center rounded-lg bg-[#059669] px-4 py-3 text-sm font-semibold text-[#FFFFFF] hover:bg-[#047857] focus:outline-none focus:ring-2 focus:ring-[#059669] focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
+              className="group relative flex w-full justify-center rounded-lg bg-[#096F9A] px-4 py-3 text-sm font-semibold text-[#FFFFFF] hover:bg-[#07587B] focus:outline-none focus:ring-2 focus:ring-[#096F9A] focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting ? (
                 <span className="flex items-center">

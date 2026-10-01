@@ -18,6 +18,7 @@ class StoreAnnouncementRequest extends FormRequest
             'sk_date' => 'required|date',
             'description' => 'required|string',
             'status' => 'required|in:draft,published',
+            'document' => 'required|file|mimes:pdf,doc,docx,xls,xlsx|max:10240',
         ];
     }
 

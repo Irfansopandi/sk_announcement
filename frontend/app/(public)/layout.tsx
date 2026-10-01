@@ -1,10 +1,7 @@
 import { Metadata } from 'next';
 import PublicHeader from '../../components/public/Header';
 
-export const metadata: Metadata = {
-  title: "SK Announcement Dashboard",
-  description: "Daftar Surat Keputusan yang telah dipublikasikan.",
-};
+
 
 export default function PublicLayout({
   children,

@@ -3,19 +3,19 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import AnnouncementForm from '../../../../../components/admin/AnnouncementForm';
-import { adminAnnouncementService } from '../../../../../lib/api/announcements';
+import MeetingForm from '../../../../../components/admin/MeetingForm';
+import { adminMeetingService } from '../../../../../lib/api/meetings';
 import { ApiError } from '../../../../../lib/api/client';
-import { Announcement } from '../../../../../types';
+import { Meeting } from '../../../../../types';
 import { toastSuccess } from '../../../../../lib/swal';
 
-export default function EditAnnouncementPage() {
+export default function EditMeetingPage() {
   const router = useRouter();
   const params = useParams();
   const id = Number(params?.id);
 
   const [isLoading, setIsLoading] = useState(true);
-  const [initialData, setInitialData] = useState<Announcement | null>(null);
+  const [initialData, setInitialData] = useState<Meeting | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [globalError, setGlobalError] = useState<string | null>(null);
@@ -32,7 +32,7 @@ export default function EditAnnouncementPage() {
 
     const fetchDetail = async () => {
       try {
-        const response = await adminAnnouncementService.getById(id);
+        const response = await adminMeetingService.getById(id);
         if (response.data) {
           setInitialData(response.data);
         } else {
@@ -57,8 +57,8 @@ export default function EditAnnouncementPage() {
   }, [id]);
 
   const handleSubmit = async (data: {
-    sk_number: string;
-    sk_date: string;
+    invitation_number: string;
+    meeting_date: string;
     description: string;
     status: 'draft' | 'published';
     document?: File | null;
@@ -68,11 +68,20 @@ export default function EditAnnouncementPage() {
       setErrors({});
       setGlobalError(null);
 
-      await adminAnnouncementService.update(id, data);
+      const formData = new FormData();
+      formData.append('invitation_number', data.invitation_number);
+      formData.append('meeting_date', data.meeting_date);
+      formData.append('description', data.description);
+      formData.append('status', data.status);
+      if (data.document) {
+        formData.append('document', data.document);
+      }
+
+      await adminMeetingService.update(id, formData);
       
       // Success
-      toastSuccess('Surat Keputusan berhasil diperbarui.');
-      router.push('/admin/announcements');
+      toastSuccess('Rapat berhasil diperbarui.');
+      router.push('/admin/notulensi');
       
     } catch (error) {
       if (error instanceof ApiError) {
@@ -89,7 +98,7 @@ export default function EditAnnouncementPage() {
         } else if (error.status === 403) {
           setGlobalError("Anda tidak memiliki akses.");
         } else if (error.status === 404) {
-          setGlobalError("Surat Keputusan tidak ditemukan.");
+          setGlobalError("Rapat tidak ditemukan.");
         } else if (error.status === 500) {
           setGlobalError("Terjadi kesalahan pada server.");
         } else {
@@ -124,10 +133,10 @@ export default function EditAnnouncementPage() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.143 17.082a24.248 24.248 0 003.844.148m-3.844-.148a23.856 23.856 0 01-5.455-1.31 8.966 8.966 0 01-2.3-1.259M9.143 17.082c.281.017.57.033.867.049m3.434-.049a24.26 24.26 0 003.844-.148m-3.844.148a20.088 20.088 0 003.434-.049m-3.434.049a23.856 23.856 0 005.455-1.31 8.966 8.966 0 002.3-1.259" />
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3l18 18" />
         </svg>
-        <h2 className="text-xl font-bold text-[#1F2937] mb-2">Surat Keputusan tidak ditemukan.</h2>
+        <h2 className="text-xl font-bold text-[#1F2937] mb-2">Rapat tidak ditemukan.</h2>
         <p className="text-[#4B5563] mb-6">Data yang Anda cari tidak ada atau mungkin sudah dihapus.</p>
         <Link 
-          href="/admin/announcements"
+          href="/admin/notulensi"
           className="inline-flex items-center px-6 py-2.5 bg-[#266210] hover:bg-[#1E4F0D] text-white rounded-lg font-medium transition-colors"
         >
           Kembali ke Daftar SK
@@ -148,13 +157,13 @@ export default function EditAnnouncementPage() {
       )}
       
       {initialData && (
-        <AnnouncementForm
-          title="Edit Surat Keputusan"
+        <MeetingForm
+          title="Edit Rapat"
           submitText="Perbarui Data"
           initialData={{
-            sk_number: initialData.sk_number,
+            invitation_number: initialData.invitation_number,
             // Format YYYY-MM-DD for date input
-            sk_date: initialData.sk_date.split('T')[0],
+            meeting_date: initialData.meeting_date.split('T')[0],
             description: initialData.description,
             status: initialData.status
           }}

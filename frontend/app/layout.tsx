@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 import { AuthProvider } from '../contexts/AuthContext';
+import DocumentTitleUpdater from '../components/DocumentTitleUpdater';
 
 export const metadata: Metadata = {
-  title: "SK Announcement Dashboard",
   description: "Dashboard for SK Announcements",
 };
 
@@ -27,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="min-h-full flex flex-col">
         <AuthProvider>
+          <DocumentTitleUpdater />
           {children}
         </AuthProvider>
       </body>
