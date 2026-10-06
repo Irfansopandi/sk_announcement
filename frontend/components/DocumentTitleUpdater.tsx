@@ -7,26 +7,26 @@ export default function DocumentTitleUpdater() {
   const pathname = usePathname();
 
   useEffect(() => {
-    let title = 'ISKR - Dashboard';
+    let title = 'ISURA - Dashboard';
     
     if (pathname.startsWith('/admin')) {
       if (pathname.includes('/announcements')) {
-        title = 'ISKR - Admin panel - SK';
+        title = 'ISURA - Admin panel - SK';
       } else if (pathname.includes('/notulensi')) {
-        title = 'ISKR - Admin panel - Rapat';
+        title = 'ISURA - Admin panel - Rapat';
       } else {
-        title = 'ISKR - Admin panel - Dashboard';
+        title = 'ISURA - Admin panel - Dashboard';
       }
     } else if (pathname.startsWith('/login')) {
-      title = 'ISKR - Login';
+      title = 'ISURA - Login';
     } else {
       // Public pages
       if (pathname.includes('/pengumuman')) {
-        title = 'ISKR - SK';
+        title = 'ISURA - SK';
       } else if (pathname.includes('/notulensi')) {
-        title = 'ISKR - Rapat';
+        title = 'ISURA - Rapat';
       } else {
-        title = 'ISKR - Dashboard';
+        title = 'ISURA - Dashboard';
       }
     }
     

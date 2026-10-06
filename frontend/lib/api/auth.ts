@@ -34,10 +34,10 @@ export const authService = {
     });
   },
 
-  updatePassword: async (current_password: string, new_password: string, new_password_confirmation: string): Promise<{ success: boolean; message: string }> => {
+  updatePassword: async (new_password: string, new_password_confirmation: string): Promise<{ success: boolean; message: string }> => {
     return fetchClient('/profile/password', {
       method: 'PUT',
-      body: JSON.stringify({ current_password, new_password, new_password_confirmation }),
+      body: JSON.stringify({ new_password, new_password_confirmation }),
     });
   }
 };

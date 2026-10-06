@@ -16,13 +16,21 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        $user = \App\Models\User::where('email', $request->email)->first();
+
+        if (!$user) {
             return response()->json([
-                'message' => 'Kredensial tidak valid'
+                'message' => 'Alamat email tidak terdaftar.'
             ], 401);
         }
 
-        $user = Auth::user();
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'message' => 'Kata sandi yang Anda masukkan salah.'
+            ], 401);
+        }
+
+        Auth::login($user);
 
         if ($user->role !== 'admin') {
             return response()->json([
@@ -78,16 +86,8 @@ class AuthController extends Controller
         $user = $request->user();
 
         $request->validate([
-            'current_password' => 'required',
             'new_password' => 'required|string|min:8|confirmed',
         ]);
-
-        if (!Hash::check($request->current_password, $user->password)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Kata sandi saat ini tidak valid'
-            ], 400);
-        }
 
         $user->password = Hash::make($request->new_password);
         $user->save();

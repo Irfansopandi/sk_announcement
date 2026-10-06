@@ -52,7 +52,7 @@ export default function LoginPage() {
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.status === 401) {
-          setError('Email atau password tidak sesuai.');
+          setError(err.message || 'Email atau password tidak sesuai.');
         } else if (err.status === 422) {
           setError('Mohon periksa kembali input Anda.');
         } else if (err.status === 403) {
@@ -75,20 +75,21 @@ export default function LoginPage() {
       {/* Interactive Particle Background */}
       <ParticleBackground />
       
-      <div className="relative z-10 w-full max-w-lg space-y-8 bg-[#FFFFFF] p-8 sm:p-10 rounded-2xl shadow-xl border border-[#E5E7E1]">
+      <div className="relative z-10 w-full max-w-lg space-y-8 bg-white/20 backdrop-blur-md p-8 sm:p-10 rounded-2xl shadow-xl border border-white/40">
         
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto h-32 w-auto max-w-[12rem] flex items-center justify-center mb-0 -mt-10">
+          <div className="mx-auto h-28 w-auto max-w-[10rem] flex items-center justify-center mb-0 -mt-4">
             <img 
-              src="/logo1_transparent.png" 
-              alt="Logo" 
+              src="/2.png" 
+              alt="ISURA Logo" 
               className="w-full h-full object-contain drop-shadow-sm"
             />
           </div>
-          <h2 className="text-xl sm:text-[1.35rem] font-bold tracking-tight text-[#1F2937] leading-tight mt-[-0.5rem]">
-            <span className="block whitespace-nowrap">INFORMASI SURAT KEPUTUSAN & RAPAT</span>
-            <span className="block text-lg mt-1">Pengadilan Agama Karawang</span>
+          <h2 className="text-xl sm:text-[1.35rem] font-bold tracking-tight leading-tight -mt-1">
+            <span className="block whitespace-nowrap text-4xl font-black bg-gradient-to-r from-[#c89c46] to-[#096F9A] bg-clip-text text-transparent">ISURA</span>
+            <span className="block text-[#c89c46] text-sm -mt-0.5">Informasi Surat Keputusan & Rapat</span>
+            <span className="block text-[#4B5563] text-sm">Pengadilan Agama Karawang</span>
           </h2>
         </div>
 
@@ -121,7 +122,7 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="relative block w-full rounded-lg border border-[#E5E7E1] px-4 py-3 text-[#1F2937] placeholder-[#98A2B3] focus:z-10 focus:border-[#096F9A] focus:outline-none focus:ring-1 focus:ring-[#096F9A] sm:text-sm transition-colors"
+                className="relative block w-full rounded-lg border border-[#E5E7E1] px-4 py-3 text-[#1F2937] placeholder-[#98A2B3] focus:z-10 focus:border-[#c89c46] focus:outline-none focus:ring-1 focus:ring-[#c89c46] sm:text-sm transition-colors bg-white/70 focus:bg-white"
                 placeholder="admin@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -140,7 +141,7 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   required
-                  className="relative block w-full rounded-lg border border-[#E5E7E1] pl-4 pr-10 py-3 text-[#1F2937] placeholder-[#98A2B3] focus:z-10 focus:border-[#096F9A] focus:outline-none focus:ring-1 focus:ring-[#096F9A] sm:text-sm transition-colors"
+                  className="relative block w-full rounded-lg border border-[#E5E7E1] pl-4 pr-10 py-3 text-[#1F2937] placeholder-[#98A2B3] focus:z-10 focus:border-[#c89c46] focus:outline-none focus:ring-1 focus:ring-[#c89c46] sm:text-sm transition-colors bg-white/70 focus:bg-white"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -171,7 +172,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting || !email || !password}
-              className="group relative flex w-full justify-center rounded-lg bg-[#096F9A] px-4 py-3 text-sm font-semibold text-[#FFFFFF] hover:bg-[#07587B] focus:outline-none focus:ring-2 focus:ring-[#096F9A] focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
+              className="group relative flex w-full justify-center rounded-lg bg-[#c89c46] px-4 py-3 text-sm font-semibold text-[#FFFFFF] hover:bg-[#b0873a] shadow-md focus:outline-none focus:ring-2 focus:ring-[#c89c46] focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed transition-all hover:-translate-y-0.5"
             >
               {isSubmitting ? (
                 <span className="flex items-center">

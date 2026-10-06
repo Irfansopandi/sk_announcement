@@ -17,6 +17,11 @@ import DocumentTitleUpdater from '../components/DocumentTitleUpdater';
 
 export const metadata: Metadata = {
   description: "Dashboard for SK Announcements",
+  icons: {
+    icon: "/1.png",
+    shortcut: "/1.png",
+    apple: "/1.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

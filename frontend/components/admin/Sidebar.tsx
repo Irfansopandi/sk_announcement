@@ -85,17 +85,19 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
           
           {/* Logo Area */}
           <div className="h-16 flex items-center px-4 border-b border-[#E5E7E1] overflow-visible">
-            <div className="flex items-center">
-              <div className="h-12 w-12 flex items-center justify-center relative shrink-0 -mr-1">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 flex items-center justify-center relative shrink-0">
                 <img 
-                  src="/logo1_transparent.png" 
-                  alt="ISKR Logo" 
-                  className="w-full h-full object-contain absolute inset-0 drop-shadow-sm scale-[1.5] origin-center"
+                  src="/2.png" 
+                  alt="ISURA Logo" 
+                  className="w-full h-full object-contain drop-shadow-sm"
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-2xl font-black text-[#096F9A] leading-none tracking-tight">ISKR</span>
-                <span className="text-[8.5px] font-bold text-[#6B7C87] mt-0.5 whitespace-nowrap">
+                <span className="text-2xl font-black bg-gradient-to-r from-[#c89c46] to-[#096F9A] bg-clip-text text-transparent leading-none tracking-tight">
+                  ISURA
+                </span>
+                <span className="text-[8.5px] font-bold text-[#c89c46] -mt-0.5 whitespace-nowrap">
                   Informasi Surat Keputusan & Rapat
                 </span>
               </div>

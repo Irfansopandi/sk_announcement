@@ -64,16 +64,24 @@ export default function PublicHeader() {
           
           {/* Left section: Logo */}
           <div className="flex items-center flex-shrink-0">
-            <Link href="/" className="flex items-center gap-2 sm:gap-3 ml-4 sm:ml-8">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center relative">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center relative shrink-0">
                 <img 
-                  src="/logo1_transparent.png" 
-                  alt="ISKN Logo" 
-                  className="w-full h-full object-contain absolute inset-0 scale-110 sm:scale-125 drop-shadow-sm"
+                  src="/2.png" 
+                  alt="ISURA Logo" 
+                  className="w-full h-full object-contain drop-shadow-sm"
                   onError={(e) => {
                     e.currentTarget.style.opacity = '0';
                   }}
                 />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-[#c89c46] to-[#096F9A] bg-clip-text text-transparent leading-none tracking-tight">
+                  ISURA
+                </span>
+                <span className="text-[9px] sm:text-[11px] font-bold text-[#c89c46] -mt-0.5 whitespace-nowrap">
+                  Informasi Surat Keputusan & Rapat
+                </span>
               </div>
             </Link>
           </div>
