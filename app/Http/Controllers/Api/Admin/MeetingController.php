@@ -130,7 +130,8 @@ class MeetingController extends Controller
             'invitation_number' => ['required', 'string', 'max:100', Rule::unique('meetings', 'invitation_number')->ignore($meeting->id)],
             'description' => 'required|string',
             'status' => 'required|in:draft,published',
-            'document' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:10240'
+            'document' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:10240',
+            'delete_document' => 'nullable'
         ]);
 
         $meeting->meeting_date = $request->meeting_date;
@@ -152,6 +153,14 @@ class MeetingController extends Controller
             $meeting->document_path = $path;
             $meeting->document_type = $file->getClientMimeType();
             $meeting->document_size = $file->getSize();
+        } elseif ($request->boolean('delete_document') || $request->input('delete_document') === '1' || $request->input('delete_document') === 'true') {
+            if ($meeting->document_path && Storage::disk('public')->exists($meeting->document_path)) {
+                Storage::disk('public')->delete($meeting->document_path);
+            }
+            $meeting->document_name = null;
+            $meeting->document_path = null;
+            $meeting->document_type = null;
+            $meeting->document_size = null;
         }
 
         $meeting->save();
@@ -202,6 +211,46 @@ class MeetingController extends Controller
             'success' => true,
             'message' => 'Meeting status updated successfully',
             'data' => $meeting
+        ]);
+    }
+
+    public function previewDocument($id)
+    {
+        $meeting = Meeting::find($id);
+
+        if (!$meeting) {
+            return response()->json(['success' => false, 'message' => 'Data Rapat tidak ditemukan'], 404);
+        }
+
+        if (!$meeting->document_path || !Storage::disk('public')->exists($meeting->document_path)) {
+            return response()->json(['success' => false, 'message' => 'Dokumen Rapat tidak ditemukan'], 404);
+        }
+
+        $filePath = Storage::disk('public')->path($meeting->document_path);
+
+        return response()->file($filePath, [
+            'Content-Type' => $meeting->document_type ?? 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . basename($meeting->document_name) . '"'
+        ]);
+    }
+
+    public function downloadDocument($id)
+    {
+        $meeting = Meeting::find($id);
+
+        if (!$meeting) {
+            return response()->json(['success' => false, 'message' => 'Data Rapat tidak ditemukan'], 404);
+        }
+
+        if (!$meeting->document_path || !Storage::disk('public')->exists($meeting->document_path)) {
+            return response()->json(['success' => false, 'message' => 'Dokumen Rapat tidak ditemukan'], 404);
+        }
+
+        $filePath = Storage::disk('public')->path($meeting->document_path);
+
+        return response()->download($filePath, basename($meeting->document_name), [
+            'Content-Type' => $meeting->document_type ?? 'application/octet-stream',
+            'Content-Disposition' => 'attachment; filename="' . basename($meeting->document_name) . '"'
         ]);
     }
 }

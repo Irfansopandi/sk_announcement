@@ -32,6 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/announcements', [AdminAnnouncementController::class, 'store']);
         Route::get('/announcements/{id}', [AdminAnnouncementController::class, 'show']);
         Route::put('/announcements/{id}', [AdminAnnouncementController::class, 'update']);
+        Route::post('/announcements/{id}', [AdminAnnouncementController::class, 'update']);
         Route::delete('/announcements/{id}', [AdminAnnouncementController::class, 'destroy']);
         Route::patch('/announcements/{id}/status', [AdminAnnouncementController::class, 'updateStatus']);
         
@@ -47,6 +48,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/meetings', [\App\Http\Controllers\Api\Admin\MeetingController::class, 'index']);
         Route::post('/meetings', [\App\Http\Controllers\Api\Admin\MeetingController::class, 'store']);
         Route::get('/meetings/{id}', [\App\Http\Controllers\Api\Admin\MeetingController::class, 'show']);
+        Route::get('/meetings/{id}/preview', [\App\Http\Controllers\Api\Admin\MeetingController::class, 'previewDocument']);
+        Route::get('/meetings/{id}/download', [\App\Http\Controllers\Api\Admin\MeetingController::class, 'downloadDocument']);
         // Note: use post instead of put/patch if sending files via FormData in update
         Route::post('/meetings/{id}', [\App\Http\Controllers\Api\Admin\MeetingController::class, 'update']);
         Route::delete('/meetings/{id}', [\App\Http\Controllers\Api\Admin\MeetingController::class, 'destroy']);

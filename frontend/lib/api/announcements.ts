@@ -46,7 +46,13 @@ export const adminAnnouncementService = {
     });
   },
 
-  update: async (id: number, data: Partial<Announcement>): Promise<ApiResponse<Announcement>> => {
+  update: async (id: number, data: Partial<Announcement> | FormData): Promise<ApiResponse<Announcement>> => {
+    if (data instanceof FormData) {
+      return fetchClient<ApiResponse<Announcement>>(`/admin/announcements/${id}`, {
+        method: 'POST',
+        body: data,
+      });
+    }
     return fetchClient<ApiResponse<Announcement>>(`/admin/announcements/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),

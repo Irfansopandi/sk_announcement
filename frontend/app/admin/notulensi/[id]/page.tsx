@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { adminMeetingService } from '../../../../lib/api/meetings';
 import { Meeting } from '../../../../types';
 import { ApiError } from '../../../../lib/api/client';
+import { Eye, Download } from 'lucide-react';
+import { getToken } from '../../../../lib/auth/token';
 
 export default function MeetingDetailPage() {
   const params = useParams();
@@ -14,6 +16,63 @@ export default function MeetingDetailPage() {
   const [data, setData] = useState<Meeting | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const handlePreview = async () => {
+    if (!id || !data?.document_name) return;
+    try {
+      const token = getToken();
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
+      const url = `${API_URL}/admin/meetings/${id}/preview`;
+      
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        handleDownload();
+        return;
+      }
+      
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      window.open(blobUrl, '_blank');
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    } catch {
+      handleDownload();
+    }
+  };
+
+  const handleDownload = async () => {
+    if (!id || !data?.document_name) return;
+    try {
+      const token = getToken();
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
+      const url = `${API_URL}/admin/meetings/${id}/download`;
+      
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) throw new Error('Gagal mengunduh dokumen');
+      
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      
+      const a = window.document.createElement('a');
+      a.href = blobUrl;
+      a.download = data.document_name;
+      window.document.body.appendChild(a);
+      a.click();
+      window.document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      alert('Gagal mengunduh dokumen.');
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -146,15 +205,41 @@ export default function MeetingDetailPage() {
         <h2 className="text-lg font-semibold text-[#1F2937] mb-6 border-b border-[#E5E7E1] pb-4">Dokumen Lampiran</h2>
         
         {data.document_name ? (
-          <div className="flex items-center justify-between p-4 border border-[#E5E7E1] rounded-lg">
-            <div className="flex items-center gap-3">
-              <svg className="w-8 h-8 text-[#096F9A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-              </svg>
-              <div>
-                <p className="text-sm font-medium text-[#1F2937]">{data.document_name}</p>
-                <p className="text-xs text-[#6B7C87]">Terlampir</p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border border-[#E5E7E1] rounded-xl hover:bg-[#F7F8F5] transition-colors">
+            <div className="flex items-center gap-3.5">
+              <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg shrink-0 border border-blue-100">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                </svg>
               </div>
+              <div>
+                <p className="text-sm font-semibold text-[#1F2937]">{data.document_name}</p>
+                <p className="text-xs text-[#6B7C87]">
+                  {data.document_type?.includes('pdf') || data.document_name.endsWith('.pdf') ? 'PDF' : 'Dokumen'}
+                  {data.document_size ? ` • ${(data.document_size / 1024 / 1024).toFixed(2)} MB` : ''}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handlePreview}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#096F9A] bg-[#F0F8FB] hover:bg-[#E0F2FA] rounded-lg transition-colors cursor-pointer"
+                title="Lihat Pratinjau Dokumen"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                Lihat
+              </button>
+              <button
+                type="button"
+                onClick={handleDownload}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors cursor-pointer"
+                title="Unduh Dokumen"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Unduh
+              </button>
             </div>
           </div>
         ) : (

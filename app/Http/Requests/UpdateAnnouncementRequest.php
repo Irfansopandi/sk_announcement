@@ -20,6 +20,8 @@ class UpdateAnnouncementRequest extends FormRequest
             'sk_date' => 'required|date',
             'description' => 'required|string',
             'status' => 'required|in:draft,published',
+            'document' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:10240',
+            'delete_document' => 'nullable',
         ];
     }
 

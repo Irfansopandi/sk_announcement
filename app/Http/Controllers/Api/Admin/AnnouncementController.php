@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateAnnouncementRequest;
 use App\Models\Announcement;
 use App\Models\Document;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class AnnouncementController extends Controller
@@ -92,13 +93,13 @@ class AnnouncementController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'SK berhasil ditambahkan',
-            'data' => $announcement
+            'data' => $announcement->load('documents')
         ], 201);
     }
 
     public function show($id)
     {
-        $announcement = Announcement::find($id);
+        $announcement = Announcement::with('documents')->find($id);
 
         if (!$announcement) {
             return response()->json([
@@ -116,7 +117,7 @@ class AnnouncementController extends Controller
 
     public function update(UpdateAnnouncementRequest $request, $id)
     {
-        $announcement = Announcement::find($id);
+        $announcement = Announcement::with('documents')->find($id);
 
         if (!$announcement) {
             return response()->json([
@@ -132,18 +133,60 @@ class AnnouncementController extends Controller
             unset($validated['created_by']);
         }
 
-        $announcement->update($validated);
+        $announcement->update([
+            'sk_number' => $validated['sk_number'],
+            'sk_date' => $validated['sk_date'],
+            'description' => $validated['description'],
+            'status' => $validated['status'],
+        ]);
+
+        // Handle document replacement or deletion
+        if ($request->hasFile('document')) {
+            // Delete old documents
+            foreach ($announcement->documents as $oldDoc) {
+                if (Storage::disk('local')->exists($oldDoc->file_path)) {
+                    Storage::disk('local')->delete($oldDoc->file_path);
+                }
+                $oldDoc->delete();
+            }
+
+            $file = $request->file('document');
+            $originalName = $file->getClientOriginalName();
+            $fileSize = $file->getSize();
+            $fileType = $file->getMimeType();
+            
+            $extension = $file->getClientOriginalExtension();
+            $uniqueName = Str::uuid() . '.' . $extension;
+            
+            $filePath = $file->storeAs('documents/' . $announcement->id, $uniqueName, 'local');
+
+            Document::create([
+                'announcement_id' => $announcement->id,
+                'file_name' => $originalName,
+                'file_path' => $filePath,
+                'file_type' => substr($fileType, 0, 255),
+                'file_size' => $fileSize,
+            ]);
+        } elseif ($request->boolean('delete_document') || $request->input('delete_document') === '1' || $request->input('delete_document') === 'true') {
+            // Delete existing documents if user requested to remove
+            foreach ($announcement->documents as $oldDoc) {
+                if (Storage::disk('local')->exists($oldDoc->file_path)) {
+                    Storage::disk('local')->delete($oldDoc->file_path);
+                }
+                $oldDoc->delete();
+            }
+        }
 
         return response()->json([
             'success' => true,
             'message' => 'SK berhasil diperbarui',
-            'data' => $announcement
+            'data' => $announcement->fresh('documents')
         ], 200);
     }
 
     public function destroy($id)
     {
-        $announcement = Announcement::find($id);
+        $announcement = Announcement::with('documents')->find($id);
 
         if (!$announcement) {
             return response()->json([
@@ -151,6 +194,14 @@ class AnnouncementController extends Controller
                 'message' => 'SK tidak ditemukan'
             ], 404);
         }
+
+        foreach ($announcement->documents as $oldDoc) {
+            if (Storage::disk('local')->exists($oldDoc->file_path)) {
+                Storage::disk('local')->delete($oldDoc->file_path);
+            }
+            $oldDoc->delete();
+        }
+        Storage::disk('local')->deleteDirectory('documents/' . $announcement->id);
 
         $announcement->delete();
 

@@ -62,6 +62,7 @@ export default function EditMeetingPage() {
     description: string;
     status: 'draft' | 'published';
     document?: File | null;
+    delete_document?: boolean;
   }) => {
     try {
       setIsSubmitting(true);
@@ -75,6 +76,9 @@ export default function EditMeetingPage() {
       formData.append('status', data.status);
       if (data.document) {
         formData.append('document', data.document);
+      }
+      if (data.delete_document) {
+        formData.append('delete_document', '1');
       }
 
       await adminMeetingService.update(id, formData);
@@ -139,7 +143,7 @@ export default function EditMeetingPage() {
           href="/admin/notulensi"
           className="inline-flex items-center px-6 py-2.5 bg-[#266210] hover:bg-[#1E4F0D] text-white rounded-lg font-medium transition-colors"
         >
-          Kembali ke Daftar SK
+          Kembali ke Daftar Rapat
         </Link>
       </div>
     );
@@ -167,6 +171,12 @@ export default function EditMeetingPage() {
             description: initialData.description,
             status: initialData.status
           }}
+          existingDocument={initialData.document_name ? {
+            name: initialData.document_name,
+            size: initialData.document_size,
+            type: initialData.document_type
+          } : null}
+          meetingId={id}
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
           errors={errors}

@@ -62,13 +62,26 @@ export default function EditAnnouncementPage() {
     description: string;
     status: 'draft' | 'published';
     document?: File | null;
+    delete_document?: boolean;
   }) => {
     try {
       setIsSubmitting(true);
       setErrors({});
       setGlobalError(null);
 
-      await adminAnnouncementService.update(id, data);
+      const formData = new FormData();
+      formData.append('sk_number', data.sk_number);
+      formData.append('sk_date', data.sk_date);
+      formData.append('description', data.description);
+      formData.append('status', data.status);
+      if (data.document) {
+        formData.append('document', data.document);
+      }
+      if (data.delete_document) {
+        formData.append('delete_document', '1');
+      }
+
+      await adminAnnouncementService.update(id, formData);
       
       // Success
       toastSuccess('Surat Keputusan berhasil diperbarui.');
@@ -158,6 +171,8 @@ export default function EditAnnouncementPage() {
             description: initialData.description,
             status: initialData.status
           }}
+          existingDocuments={initialData.documents || []}
+          announcementId={id}
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
           errors={errors}
